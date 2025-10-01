@@ -86,7 +86,7 @@ export default function TabataTimer() {
 
             <div className="max-w-2xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Chronomètre Tabata</h1>
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">Chronomètre Tabata</h1>
                     <button
                         onClick={() => setShowSettings(!showSettings)}
                         className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"

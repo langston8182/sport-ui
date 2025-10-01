@@ -7,6 +7,7 @@ import { Program, Session, ScheduleEntry } from '../types';
 import { Loader } from '../components/ui/Loader';
 import { useToast } from '../components/ui/Toast';
 import { SessionPicker } from '../components/programs/SessionPicker';
+// SessionDetailsModal removed: navigation instead of modal
 
 export function ProgramForm() {
   const { id } = useParams();
@@ -78,66 +79,64 @@ export function ProgramForm() {
     setShowPicker(true);
   };
 
+  /**
+   * Navigates to the session detail page in view mode. When a session cell is clicked,
+   * redirect to the session's page with ?mode=view.
+   */
+  const handleViewSession = (sessionId: string) => {
+    navigate(`/sessions/${sessionId}?mode=view`);
+  };
+
   const handleSelectSession = async (session: Session) => {
     if (!selectedCell) return;
 
     const { week, slot } = selectedCell;
     const existingEntry = getScheduleEntry(week, slot);
-    const localEntryId = `wk${week}-s${slot}`;
+    const entryId = `wk${week}-s${slot}`;
 
     setShowPicker(false);
     setSelectedCell(null);
 
     try {
-      let updatedOrNewEntry: ScheduleEntry;
-
       if (isEdit && id) {
         if (existingEntry) {
-          // 1) Update côté serveur
-          const apiUpdated = await programsService.updateScheduleEntry(id, existingEntry.entryId, {
+          await programsService.updateScheduleEntry(id, existingEntry.entryId, {
             week,
             slot,
             sessionId: session.id,
           });
-          // 2) MAJ state local (sans dépendre de la réponse)
-          updatedOrNewEntry = {
-            entryId: apiUpdated?.entryId ?? existingEntry.entryId,
-            week,
-            slot,
-            sessionId: session.id,
-          };
+
+          setSchedule((prev) =>
+              prev.map((entry) =>
+                  entry.week === week && entry.slot === slot
+                      ? { ...entry, sessionId: session.id }
+                      : entry
+              )
+          );
         } else {
-          // 1) Création côté serveur
-          const apiCreated = await programsService.addScheduleEntry(id, {
+          const newEntry = await programsService.addScheduleEntry(id, {
             week,
             slot,
             sessionId: session.id,
           });
-          // 2) MAJ state local (prend l’entryId de l’API si dispo)
-          updatedOrNewEntry = {
-            entryId: apiCreated?.entryId ?? localEntryId,
-            week,
-            slot,
-            sessionId: session.id,
-          };
+          setSchedule((prev) => [...prev, newEntry]);
         }
+        setSessions((prev) => ({ ...prev, [session.id]: session }));
+        showToast('Session added to schedule', 'success');
       } else {
-        // Mode création de programme (pas encore persisté)
-        updatedOrNewEntry = existingEntry
-            ? { ...existingEntry, sessionId: session.id }
-            : { entryId: localEntryId, week, slot, sessionId: session.id };
+        setSessions((prev) => ({ ...prev, [session.id]: session }));
+        if (existingEntry) {
+          setSchedule((prev) =>
+              prev.map((entry) =>
+                  entry.week === week && entry.slot === slot
+                      ? { ...entry, sessionId: session.id }
+                      : entry
+              )
+          );
+        } else {
+          setSchedule((prev) => [...prev, { entryId, week, slot, sessionId: session.id }]);
+        }
       }
-
-      // Mise à jour du state schedule de façon immuable et **toujours** locale
-      setSchedule((prev) => {
-        const withoutCell = prev.filter(e => !(e.week === week && e.slot === slot));
-        return [...withoutCell, updatedOrNewEntry];
-      });
-
-      // Assure que la session est résolue tout de suite dans l’UI
-      setSessions((prev) => ({ ...prev, [session.id]: session }));
-
-      showToast(existingEntry ? 'Session updated in schedule' : 'Session added to schedule', 'success');
     } catch (error) {
       showToast('Failed to update schedule', 'error');
     }
@@ -307,11 +306,15 @@ export function ProgramForm() {
                                         className="px-2 py-2 border-r border-gray-200 last:border-r-0"
                                     >
                                       {session ? (
-                                          <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <span className="text-sm text-blue-900 font-medium">
-                                      {session.name}
-                                    </span>
-                                          </div>
+                                          <button
+                                              type="button"
+                                              onClick={() => handleViewSession(session.id)}
+                                              className="w-full p-2 bg-blue-50 border border-blue-200 rounded-lg text-left hover:bg-blue-100"
+                                          >
+                                            <span className="text-sm text-blue-900 font-medium truncate">
+                                              {session.name}
+                                            </span>
+                                          </button>
                                       ) : (
                                           <div className="p-4 text-center text-sm text-gray-400">
                                             No session
@@ -449,13 +452,19 @@ export function ProgramForm() {
                                         className="px-2 py-2 border-r border-gray-200 last:border-r-0"
                                     >
                                       {session ? (
-                                          <div className="flex items-center justify-between gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                                  <span className="text-sm text-blue-900 font-medium truncate">
-                                    {session.name}
-                                  </span>
+                                          <div
+                                              className="flex items-center justify-between gap-2 p-2 bg-blue-50 border border-blue-200 rounded-lg cursor-pointer"
+                                              onClick={() => handleViewSession(session.id)}
+                                          >
+                                            <span className="text-sm text-blue-900 font-medium truncate">
+                                              {session.name}
+                                            </span>
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveEntry(week, slot)}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleRemoveEntry(week, slot);
+                                                }}
                                                 className="flex-shrink-0 text-blue-600 hover:text-blue-800"
                                                 aria-label="Remove session"
                                             >

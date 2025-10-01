@@ -67,8 +67,8 @@ export function ProgramsList() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Programs</h1>
-            <p className="text-gray-600">{programs.length} total programs</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">Programs</h1>
+            <p className="text-gray-600 text-lg">{programs.length} total programs</p>
           </div>
           <Link
               to="/programs/new"
