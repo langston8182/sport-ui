@@ -5,6 +5,8 @@ import type { Session, Exercise, SessionItem } from '../types';
 import ExerciseDetailsModal from '../components/sessions/ExerciseDetailsModal';
 import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
 import { ProgressDot } from '../components/ui/ProgressDot';
+import { sessionsService } from '../services/sessions';
+import { useToast } from '../components/ui/Toast';
 
 interface LocationState {
     session?: Session;
@@ -21,9 +23,21 @@ export default function SessionPlay() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation() as { state: LocationState };
+    const { showToast } = useToast();
 
     const session = location.state?.session;
     const exercises = location.state?.exercises || {};
+    
+    // État local pour les notes des exercices
+    const [itemNotes, setItemNotes] = useState<Record<number, string>>(() => {
+        const initial: Record<number, string> = {};
+        session?.items.forEach((item, index) => {
+            if (item.notes) {
+                initial[index] = item.notes;
+            }
+        });
+        return initial;
+    });
 
     if (!id || !session) {
         return (
@@ -121,6 +135,42 @@ export default function SessionPlay() {
         setModalExercise(null);
     };
 
+    // Fonction pour mettre à jour les notes d'un exercice
+    const updateExerciseNote = async (exerciseIndex: number, note: string) => {
+        try {
+            // Mettre à jour l'état local immédiatement
+            setItemNotes(prev => ({
+                ...prev,
+                [exerciseIndex]: note
+            }));
+
+            // Créer une copie mise à jour de la session
+            const updatedItems = session.items.map((item, index) => 
+                index === exerciseIndex ? { ...item, notes: note } : item
+            );
+
+            // Appeler l'API pour persister les changements
+            await sessionsService.update(session.id, {
+                items: updatedItems
+            });
+
+            showToast('Note sauvegardée', 'success');
+        } catch (error) {
+            console.error('Failed to update note:', error);
+            showToast('Erreur lors de la sauvegarde de la note', 'error');
+            // Revenir à l'état précédent en cas d'erreur
+            setItemNotes(prev => {
+                const updated = { ...prev };
+                if (session.items[exerciseIndex]?.notes) {
+                    updated[exerciseIndex] = session.items[exerciseIndex].notes!;
+                } else {
+                    delete updated[exerciseIndex];
+                }
+                return updated;
+            });
+        }
+    };
+
     const formatSummary = (item: SessionItem, ex?: Exercise) => {
         if (!ex) return '';
         if (ex.mode === 'reps') {
@@ -213,9 +263,27 @@ export default function SessionPlay() {
                                 {item.restSec ? (
                                     <div className="text-gray-600 text-sm">Repos {item.restSec}s</div>
                                 ) : null}
-                                {item.notes && (
-                                    <div className="text-gray-500 italic text-sm mt-1">{item.notes}</div>
-                                )}
+                                {/* Zone de notes */}
+                                <div className="mt-2">
+                                    <textarea
+                                        placeholder="Ajouter une note pour cet exercice..."
+                                        value={itemNotes[index] || ''}
+                                        onChange={(e) => {
+                                            const note = e.target.value;
+                                            setItemNotes(prev => ({
+                                                ...prev,
+                                                [index]: note
+                                            }));
+                                        }}
+                                        onBlur={(e) => {
+                                            const note = e.target.value.trim();
+                                            updateExerciseNote(index, note);
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        rows={2}
+                                    />
+                                </div>
                             </div>
 
                             {/* Validation */}
