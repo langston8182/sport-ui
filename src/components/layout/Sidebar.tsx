@@ -11,25 +11,39 @@ const navItems = [
 
 export function Sidebar() {
     return (
-        <aside className="w-64 bg-gradient-to-b from-slate-50 to-gray-100 border-r border-gray-200/50 h-[calc(100vh-4rem)] sticky top-16 hidden md:block shadow-sm">
+        <aside className="w-64 bg-gradient-to-b from-white/95 via-pastel-blue-50/50 to-pastel-purple-50/30 border-r border-pastel-neutral-200/30 h-[calc(100vh-4.5rem)] sticky top-18 hidden md:block shadow-soft backdrop-blur-sm">
             <nav className="p-6 space-y-2">
+                <div className="mb-8">
+                    <h2 className="text-xs font-semibold text-pastel-neutral-500 uppercase tracking-wider mb-3">Navigation</h2>
+                </div>
                 {navItems.map(({ to, icon: Icon, label, exact }) => (
                     <NavLink
                         key={to}
                         to={to}
                         end={exact}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                            `nav-item ${
                                 isActive
-                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow-lg'
-                                    : 'text-gray-700 hover:bg-white/80 hover:shadow-md'
+                                    ? 'nav-item-active'
+                                    : ''
                             }`
                         }
                     >
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span>{label}</span>
+                        <div className={`p-2 rounded-lg transition-all duration-300 ${
+                            'group-hover:bg-pastel-blue-100/50'
+                        }`}>
+                            <Icon className="w-5 h-5 flex-shrink-0" />
+                        </div>
+                        <span className="font-medium">{label}</span>
                     </NavLink>
                 ))}
+                
+                <div className="mt-8 pt-6 border-t border-pastel-neutral-200/50">
+                    <div className="px-4 py-3 rounded-xl bg-gradient-to-br from-pastel-blue-50 to-pastel-purple-50 border border-pastel-blue-200/30">
+                        <p className="text-xs text-pastel-neutral-600 font-medium">Training Manager</p>
+                        <p className="text-xs text-pastel-neutral-500 mt-1">Version 1.0</p>
+                    </div>
+                </div>
             </nav>
         </aside>
     );

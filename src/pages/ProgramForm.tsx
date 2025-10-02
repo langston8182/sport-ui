@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, X, CreditCard as Edit } from 'lucide-react';
 import { programsService } from '../services/programs';
@@ -26,6 +27,11 @@ export function ProgramForm() {
   const [sessionsPerWeek, setSessionsPerWeek] = useState(3);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [sessions, setSessions] = useState<Record<string, Session>>({});
+  const [renderKey, setRenderKey] = useState(0);
+  
+  // Debug logging
+  console.log('Current sessions state:', sessions);
+  console.log('Current schedule state:', schedule);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPicker, setShowPicker] = useState(false);
   const [selectedCell, setSelectedCell] = useState<{ week: number; slot: number } | null>(null);
@@ -88,59 +94,69 @@ export function ProgramForm() {
   };
 
   const handleSelectSession = async (session: Session) => {
-    if (!selectedCell) return;
+  if (!selectedCell) return;
 
-    const { week, slot } = selectedCell;
-    const existingEntry = getScheduleEntry(week, slot);
-    const entryId = `wk${week}-s${slot}`;
+  const { week, slot } = selectedCell;
+  const existingEntry = getScheduleEntry(week, slot);
+  const localEntryId = `wk${week}-s${slot}`;
 
-    setShowPicker(false);
-    setSelectedCell(null);
+  setShowPicker(false);
+  setSelectedCell(null);
 
-    try {
-      if (isEdit && id) {
-        if (existingEntry) {
-          await programsService.updateScheduleEntry(id, existingEntry.entryId, {
-            week,
-            slot,
-            sessionId: session.id,
-          });
+  try {
+    let updatedOrNewEntry: ScheduleEntry;
 
-          setSchedule((prev) =>
-              prev.map((entry) =>
-                  entry.week === week && entry.slot === slot
-                      ? { ...entry, sessionId: session.id }
-                      : entry
-              )
-          );
-        } else {
-          const newEntry = await programsService.addScheduleEntry(id, {
-            week,
-            slot,
-            sessionId: session.id,
-          });
-          setSchedule((prev) => [...prev, newEntry]);
-        }
-        setSessions((prev) => ({ ...prev, [session.id]: session }));
-        showToast('Session added to schedule', 'success');
+    if (isEdit && id) {
+      if (existingEntry) {
+        // 1) Update côté serveur
+        const apiUpdated = await programsService.updateScheduleEntry(id, existingEntry.entryId, {
+          week,
+          slot,
+          sessionId: session.id,
+        });
+        // 2) MAJ state local (sans dépendre de la réponse)
+        updatedOrNewEntry = {
+          entryId: apiUpdated?.entryId ?? existingEntry.entryId,
+          week,
+          slot,
+          sessionId: session.id,
+        };
       } else {
-        setSessions((prev) => ({ ...prev, [session.id]: session }));
-        if (existingEntry) {
-          setSchedule((prev) =>
-              prev.map((entry) =>
-                  entry.week === week && entry.slot === slot
-                      ? { ...entry, sessionId: session.id }
-                      : entry
-              )
-          );
-        } else {
-          setSchedule((prev) => [...prev, { entryId, week, slot, sessionId: session.id }]);
-        }
+        // 1) Création côté serveur
+        const apiCreated = await programsService.addScheduleEntry(id, {
+          week,
+          slot,
+          sessionId: session.id,
+        });
+        // 2) MAJ state local (prend l’entryId de l’API si dispo)
+        updatedOrNewEntry = {
+          entryId: apiCreated?.entryId ?? localEntryId,
+          week,
+          slot,
+          sessionId: session.id,
+        };
       }
-    } catch (error) {
-      showToast('Failed to update schedule', 'error');
+    } else {
+      // Mode création de programme (pas encore persisté)
+      updatedOrNewEntry = existingEntry
+        ? { ...existingEntry, sessionId: session.id }
+        : { entryId: localEntryId, week, slot, sessionId: session.id };
     }
-  };
+
+    // Mise à jour du state schedule de façon immuable et **toujours** locale
+    setSchedule((prev) => {
+      const withoutCell = prev.filter(e => !(e.week === week && e.slot === slot));
+      return [...withoutCell, updatedOrNewEntry];
+    });
+
+    // Assure que la session est résolue tout de suite dans l’UI
+    setSessions((prev) => ({ ...prev, [session.id]: session }));
+
+    showToast(existingEntry ? 'Session updated in schedule' : 'Session added to schedule', 'success');
+  } catch (error) {
+    showToast('Failed to update schedule', 'error');
+  }
+};
 
   const handleRemoveEntry = async (week: number, slot: number) => {
     const entry = getScheduleEntry(week, slot);
@@ -417,7 +433,7 @@ export function ProgramForm() {
                   </p>
 
                   <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                    <table className="w-full">
+                    <table className="w-full" key={renderKey}>
                       <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-r border-gray-200">

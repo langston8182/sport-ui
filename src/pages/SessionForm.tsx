@@ -190,19 +190,19 @@ export function SessionForm() {
       <div>
         <button
             onClick={() => navigate('/sessions')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            className="btn-outline flex items-center gap-2 mb-6 w-full sm:w-auto justify-center sm:justify-start"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Sessions</span>
         </button>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-4xl">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">
+        <div className="card-pastel p-4 sm:p-6 w-full max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gradient-primary">
               {isView ? name || 'Session Details' : isEdit ? 'Edit Session' : 'New Session'}
             </h1>
             {isView && (
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   {/* Play button to navigate to training mode. Pass the session and exercises via route state. */}
                   <button
                       type="button"
@@ -212,7 +212,7 @@ export function SessionForm() {
                           state: { session: sessionObj, exercises },
                         });
                       }}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                      className="btn-success flex items-center justify-center gap-2"
                   >
                     <Play className="w-4 h-4" />
                     <span>Play</span>
@@ -220,7 +220,7 @@ export function SessionForm() {
                   {/* Edit button remains unchanged */}
                   <button
                       onClick={() => navigate(`/sessions/${id}/edit`)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="btn-primary flex items-center justify-center gap-2"
                   >
                     <Edit className="w-4 h-4" />
                     <span>Edit</span>
@@ -247,15 +247,18 @@ export function SessionForm() {
                           if (!exercise) return null;
 
                           return (
-                              <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                                <div className="flex items-start gap-4">
-                                  <img
-                                      src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
-                                      srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
-                                      sizes="(max-width: 640px) 64px, (max-width: 768px) 64px, 64px"
-                                      alt={exercise.name}
-                                      className="w-16 h-16 object-cover rounded-lg"
-                                  />
+                              <div key={index} className="card-modern border border-pastel-neutral-200 rounded-xl p-4">
+                                <div className="flex flex-col sm:flex-row items-start gap-4">
+                                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                                    <img
+                                        src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
+                                        srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
+                                        sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, 64px"
+                                        alt={exercise.name}
+                                        className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-xl"
+                                    />
+                                    <h3 className="font-semibold text-pastel-neutral-800 sm:hidden">{exercise.name}</h3>
+                                  </div>
 
                                   <div className="flex-1">
                                     <h3 className="font-medium text-gray-900 mb-3">{exercise.name}</h3>
@@ -333,14 +336,14 @@ export function SessionForm() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Exercises <span className="text-red-500">*</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <label className="block text-sm font-semibold text-pastel-neutral-700">
+                      Exercises <span className="text-pastel-rose-500">*</span>
                     </label>
                     <button
                         type="button"
                         onClick={() => setShowPicker(true)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="btn-primary flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                     >
                       <Plus className="w-4 h-4" />
                       Add Exercise
@@ -379,39 +382,42 @@ export function SessionForm() {
                                   onDrop={(e) => handleDrop(e, index)}
                                   onDragEnd={handleDragEnd}
                                   className={`
-                        relative border rounded-lg p-4 transition-all duration-200
+                        relative border rounded-xl p-4 transition-all duration-200
                         ${isDragging
-                                      ? 'opacity-50 scale-[0.98] shadow-2xl border-blue-500 bg-blue-50 cursor-grabbing'
-                                      : 'bg-gray-50 border-gray-200 cursor-grab hover:shadow-lg hover:border-gray-300'
+                                      ? 'opacity-50 scale-[0.98] shadow-pastel-lg border-pastel-blue-400 bg-pastel-blue-50 cursor-grabbing'
+                                      : 'bg-white border-pastel-neutral-200 cursor-grab hover:shadow-soft-lg hover:border-pastel-blue-300'
                                   }
                         ${isOver && !isDragging
-                                      ? 'border-t-4 border-t-blue-500 border-b-4 border-b-blue-500 scale-[1.02]'
+                                      ? 'border-t-4 border-t-pastel-blue-500 border-b-4 border-b-pastel-blue-500 scale-[1.02]'
                                       : ''
                                   }
                       `}
                               >
                                 {isOver && !isDragging && (
-                                    <div className="absolute inset-0 bg-blue-100 opacity-20 rounded-lg pointer-events-none animate-pulse" />
+                                    <div className="absolute inset-0 bg-pastel-blue-100 opacity-30 rounded-xl pointer-events-none animate-pulse" />
                                 )}
-                                <div className="flex items-start gap-4">
-                                  <div className="flex-shrink-0 text-gray-400 hover:text-blue-600 transition-colors mt-1">
-                                    <GripVertical className="w-5 h-5" />
+                                <div className="flex flex-col sm:flex-row items-start gap-4">
+                                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                                    <div className="flex-shrink-0 text-pastel-neutral-400 hover:text-pastel-blue-600 transition-colors">
+                                      <GripVertical className="w-5 h-5" />
+                                    </div>
+                                    <img
+                                        src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
+                                        srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
+                                        sizes="(max-width: 640px) 56px, (max-width: 768px) 64px, 64px"
+                                        alt={exercise.name}
+                                        className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-xl"
+                                    />
+                                    <h3 className="font-semibold text-pastel-neutral-800 sm:hidden">{exercise.name}</h3>
                                   </div>
-                                  <img
-                                      src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
-                                      srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
-                                      sizes="(max-width: 640px) 64px, (max-width: 768px) 64px, 64px"
-                                      alt={exercise.name}
-                                      className="w-16 h-16 object-cover rounded-lg"
-                                  />
 
-                                  <div className="flex-1">
-                                    <h3 className="font-medium text-gray-900 mb-3">{exercise.name}</h3>
+                                  <div className="flex-1 w-full">
+                                    <h3 className="font-semibold text-pastel-neutral-800 mb-4 hidden sm:block">{exercise.name}</h3>
 
                                     {exercise.mode === 'reps' ? (
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                           <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Sets</label>
+                                            <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">Sets</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -419,11 +425,11 @@ export function SessionForm() {
                                                 onChange={(e) =>
                                                     handleUpdateItem(index, { sets: Number(e.target.value) })
                                                 }
-                                                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                                                className="input-pastel w-full text-sm"
                                             />
                                           </div>
                                           <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Reps</label>
+                                            <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">Reps</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -431,11 +437,11 @@ export function SessionForm() {
                                                 onChange={(e) =>
                                                     handleUpdateItem(index, { reps: Number(e.target.value) })
                                                 }
-                                                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                                                className="input-pastel w-full text-sm"
                                             />
                                           </div>
                                           <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Rest (sec)</label>
+                                            <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">Rest (sec)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -443,14 +449,14 @@ export function SessionForm() {
                                                 onChange={(e) =>
                                                     handleUpdateItem(index, { restSec: Number(e.target.value) })
                                                 }
-                                                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                                                className="input-pastel w-full text-sm"
                                             />
                                           </div>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                           <div>
-                                            <label className="block text-xs text-gray-600 mb-1">
+                                            <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">
                                               Duration (sec)
                                             </label>
                                             <input
@@ -460,11 +466,11 @@ export function SessionForm() {
                                                 onChange={(e) =>
                                                     handleUpdateItem(index, { durationSec: Number(e.target.value) })
                                                 }
-                                                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                                                className="input-pastel w-full text-sm"
                                             />
                                           </div>
                                           <div>
-                                            <label className="block text-xs text-gray-600 mb-1">Rest (sec)</label>
+                                            <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">Rest (sec)</label>
                                             <input
                                                 type="number"
                                                 min="0"
@@ -472,52 +478,52 @@ export function SessionForm() {
                                                 onChange={(e) =>
                                                     handleUpdateItem(index, { restSec: Number(e.target.value) })
                                                 }
-                                                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
+                                                className="input-pastel w-full text-sm"
                                             />
                                           </div>
                                         </div>
                                     )}
 
-                                    <div className="mt-3">
-                                      <label className="block text-xs text-gray-600 mb-1">Notes</label>
+                                    <div className="mt-4">
+                                      <label className="block text-xs font-medium text-pastel-neutral-600 mb-2">Notes</label>
                                       <input
                                           type="text"
                                           value={item.notes || ''}
                                           onChange={(e) =>
                                               handleUpdateItem(index, { notes: e.target.value })
                                           }
-                                          className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg"
-                                          placeholder="Optional notes..."
+                                          className="input-pastel w-full text-sm"
+                                          placeholder="Notes optionnelles..."
                                       />
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-col gap-1">
+                                  <div className="flex flex-row sm:flex-col gap-2 sm:gap-1 justify-end sm:justify-start mt-4 sm:mt-0">
                                     <button
                                         type="button"
                                         onClick={() => handleMoveItem(index, 'up')}
                                         disabled={index === 0}
-                                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                                        className="p-2 text-pastel-neutral-400 hover:text-pastel-blue-600 disabled:opacity-30 rounded-lg hover:bg-pastel-blue-50 transition-all duration-200"
                                         aria-label="Move up"
                                     >
-                                      <ChevronUp className="w-5 h-5" />
+                                      <ChevronUp className="w-4 h-4" />
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => handleMoveItem(index, 'down')}
                                         disabled={index === items.length - 1}
-                                        className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                                        className="p-2 text-pastel-neutral-400 hover:text-pastel-blue-600 disabled:opacity-30 rounded-lg hover:bg-pastel-blue-50 transition-all duration-200"
                                         aria-label="Move down"
                                     >
-                                      <ChevronDown className="w-5 h-5" />
+                                      <ChevronDown className="w-4 h-4" />
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => handleRemoveItem(index)}
-                                        className="p-1 text-gray-400 hover:text-red-600"
+                                        className="p-2 text-pastel-neutral-400 hover:text-pastel-rose-600 rounded-lg hover:bg-pastel-rose-50 transition-all duration-200"
                                         aria-label="Remove"
                                     >
-                                      <Trash2 className="w-5 h-5" />
+                                      <Trash2 className="w-4 h-4" />
                                     </button>
                                   </div>
                                 </div>
@@ -528,11 +534,11 @@ export function SessionForm() {
                   )}
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-6">
                   <button
                       type="button"
                       onClick={() => navigate('/sessions')}
-                      className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="btn-secondary order-2 sm:order-1"
                       disabled={submitting}
                   >
                     Cancel

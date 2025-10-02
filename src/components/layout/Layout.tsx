@@ -8,12 +8,14 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-pastel-blue-50 via-white to-pastel-purple-50">
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
-          {children}
+        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full fade-in">
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

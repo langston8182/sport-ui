@@ -1,31 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  * {
+    @apply border-pastel-neutral-200;
+  }
+  
   body {
-    @apply bg-gradient-to-br from-slate-50 to-blue-50;
+    @apply bg-gradient-to-br from-pastel-blue-50 via-white to-pastel-purple-50 font-sans antialiased;
+    background-attachment: fixed;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold text-pastel-neutral-800;
   }
 }
 
 @layer components {
-  .card-gradient {
-    @apply bg-gradient-to-br from-white to-gray-50 border border-gray-200/50 shadow-lg shadow-gray-200/20;
+  /* Cartes modernes */
+  .card-modern {
+    @apply bg-white/90 backdrop-blur-sm border border-white/50 rounded-2xl shadow-soft;
+  }
+  
+  .card-pastel {
+    @apply bg-gradient-to-br from-white/95 to-pastel-blue-50/50 border border-pastel-blue-200/30 rounded-2xl shadow-soft backdrop-blur-sm;
   }
   
   .card-hover {
-    @apply hover:shadow-xl hover:shadow-gray-200/30 hover:-translate-y-1 transition-all duration-300;
+    @apply hover:shadow-soft-lg hover:-translate-y-1 hover:border-pastel-blue-300/40 transition-all duration-300 ease-out;
   }
   
+  /* Boutons pastels */
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200;
+    @apply bg-gradient-to-r from-pastel-blue-500 to-pastel-blue-600 hover:from-pastel-blue-600 hover:to-pastel-blue-700 text-white font-medium px-6 py-3 rounded-xl shadow-pastel hover:shadow-pastel-lg transition-all duration-300 transform hover:scale-105;
   }
   
   .btn-secondary {
-    @apply bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium px-6 py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200;
+    @apply bg-gradient-to-r from-pastel-neutral-50 to-pastel-neutral-100 hover:from-pastel-neutral-100 hover:to-pastel-neutral-200 text-pastel-neutral-700 font-medium px-6 py-3 rounded-xl shadow-soft hover:shadow-soft-lg transition-all duration-300 border border-pastel-neutral-200/50;
   }
   
-  .input-modern {
-    @apply bg-white/80 backdrop-blur-sm border border-gray-300/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 shadow-sm transition-all duration-200;
+  .btn-success {
+    @apply bg-gradient-to-r from-pastel-green-400 to-pastel-green-500 hover:from-pastel-green-500 hover:to-pastel-green-600 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .btn-danger {
+    @apply bg-gradient-to-r from-pastel-rose-400 to-pastel-rose-500 hover:from-pastel-rose-500 hover:to-pastel-rose-600 text-white font-medium px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .btn-outline {
+    @apply bg-white/80 border-2 border-pastel-blue-300 text-pastel-blue-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-400 font-medium px-6 py-3 rounded-xl shadow-soft hover:shadow-soft-lg transition-all duration-300;
+  }
+  
+  /* Inputs modernes */
+  .input-pastel {
+    @apply bg-white/90 backdrop-blur-sm border border-pastel-neutral-300/50 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-pastel-blue-400/50 focus:border-pastel-blue-400/50 shadow-soft transition-all duration-300 placeholder-pastel-neutral-400;
+  }
+  
+  /* Navigation */
+  .nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-pastel-neutral-600 hover:text-pastel-blue-700 hover:bg-pastel-blue-50/80;
+  }
+  
+  .nav-item-active {
+    @apply bg-gradient-to-r from-pastel-blue-100 to-pastel-blue-50 text-pastel-blue-800 border border-pastel-blue-200/50 shadow-soft;
+  }
+  
+  /* Badges et labels */
+  .badge-primary {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-pastel-blue-100 to-pastel-blue-200 text-pastel-blue-800 border border-pastel-blue-200;
+  }
+  
+  .badge-success {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-pastel-green-100 to-pastel-green-200 text-pastel-green-800 border border-pastel-green-200;
+  }
+  
+  .badge-warning {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-pastel-orange-100 to-pastel-orange-200 text-pastel-orange-800 border border-pastel-orange-200;
+  }
+  
+  /* Animations douces - utilisation directe des keyframes */
+  .fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  /* Gradient text */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-pastel-blue-600 via-pastel-purple-600 to-pastel-blue-700 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-success {
+    @apply bg-gradient-to-r from-pastel-green-600 to-pastel-green-700 bg-clip-text text-transparent;
+  }
+  
+  /* Dividers */
+  .divider-soft {
+    @apply border-t border-pastel-neutral-200/50;
   }
 }

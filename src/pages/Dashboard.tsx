@@ -71,31 +71,33 @@ export function Dashboard() {
   ];
 
   const colorClasses = {
-    blue: 'bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700',
-    green: 'bg-gradient-to-br from-emerald-100 to-green-200 text-emerald-700',
-    orange: 'bg-gradient-to-br from-orange-100 to-amber-200 text-orange-700',
+    blue: 'bg-gradient-to-br from-pastel-blue-100 to-pastel-blue-200 text-pastel-blue-700',
+    green: 'bg-gradient-to-br from-pastel-green-100 to-pastel-green-200 text-pastel-green-700',
+    orange: 'bg-gradient-to-br from-pastel-orange-100 to-pastel-orange-200 text-pastel-orange-700',
   };
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">Tableau de bord</h1>
-        <p className="text-gray-600 text-lg">Gérez vos exercices, sessions et programmes d'entraînement</p>
+    <div className="space-y-8">
+      <div className="text-center md:text-left">
+        <h1 className="text-5xl font-bold text-gradient-primary mb-4">Tableau de bord</h1>
+        <p className="text-pastel-neutral-600 text-xl font-medium">Gérez vos exercices, sessions et programmes d'entraînement</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {cards.map(({ title, count, icon: Icon, to, color }) => (
           <Link
             key={title}
             to={to}
-            className="card-gradient card-hover rounded-2xl p-8 group"
+            className="card-pastel card-hover p-8 group slide-up"
+            style={{ animationDelay: `${cards.indexOf(cards.find(c => c.title === title)!) * 100}ms` }}
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-gray-600 text-sm font-semibold mb-2 uppercase tracking-wide">{title}</p>
-                <p className="text-4xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{count}</p>
+                <p className="text-pastel-neutral-500 text-sm font-semibold mb-3 uppercase tracking-wider">{title}</p>
+                <p className="text-4xl font-bold text-pastel-neutral-800 group-hover:text-pastel-blue-600 transition-colors duration-300">{count}</p>
+                <p className="text-pastel-neutral-500 text-sm mt-2">élément{count > 1 ? 's' : ''}</p>
               </div>
-              <div className={`w-16 h-16 rounded-2xl ${colorClasses[color]} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+              <div className={`w-16 h-16 rounded-2xl ${colorClasses[color as keyof typeof colorClasses]} flex items-center justify-center shadow-soft group-hover:scale-110 group-hover:shadow-soft-lg transition-all duration-300`}>
                 <Icon className="w-8 h-8" />
               </div>
             </div>
@@ -103,21 +105,32 @@ export function Dashboard() {
         ))}
       </div>
 
-      <div className="card-gradient rounded-2xl p-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Actions rapides</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {cards.map(({ title, icon: Icon, createTo }) => (
+      <div className="card-pastel p-8 mt-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pastel-purple-400 to-pastel-purple-500 flex items-center justify-center">
+            <Plus className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {cards.map(({ title, createTo }) => (
             <Link
               key={createTo}
               to={createTo}
-              className="flex items-center gap-4 p-6 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 group"
+              className="flex items-center gap-4 p-6 border-2 border-dashed border-pastel-neutral-300/50 rounded-2xl hover:border-pastel-blue-400 hover:bg-gradient-to-br hover:from-pastel-blue-50 hover:to-pastel-purple-50/50 transition-all duration-300 group"
             >
-              <div className="w-10 h-10 rounded-xl bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center transition-colors">
-                <Plus className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+              <div className="w-12 h-12 rounded-xl bg-pastel-neutral-100 group-hover:bg-pastel-blue-100 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
+                <Plus className="w-6 h-6 text-pastel-neutral-400 group-hover:text-pastel-blue-600" />
               </div>
-              <span className="text-gray-700 group-hover:text-blue-600 font-semibold">
-                Nouveau {title.slice(0, -1).toLowerCase()}
-              </span>
+              <div>
+                <span className="text-pastel-neutral-700 group-hover:text-pastel-blue-700 font-semibold block">
+                  Nouveau {title.slice(0, -1).toLowerCase()}
+                </span>
+                <span className="text-pastel-neutral-500 text-sm">
+                  Créer rapidement
+                </span>
+              </div>
             </Link>
           ))}
         </div>

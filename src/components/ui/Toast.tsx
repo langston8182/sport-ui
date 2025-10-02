@@ -34,23 +34,35 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`flex items-center gap-3 p-4 rounded-lg shadow-lg max-w-md ${
-              toast.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            className={`flex items-center gap-3 p-4 rounded-2xl shadow-soft-lg backdrop-blur-sm max-w-sm border slide-up ${
+              toast.type === 'success' 
+                ? 'bg-gradient-to-r from-pastel-green-50 to-pastel-green-100/80 text-pastel-green-800 border-pastel-green-200/50' 
+                : 'bg-gradient-to-r from-pastel-rose-50 to-pastel-rose-100/80 text-pastel-rose-800 border-pastel-rose-200/50'
             }`}
           >
-            {toast.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 flex-shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            )}
+            <div className={`p-1.5 rounded-lg ${
+              toast.type === 'success' 
+                ? 'bg-pastel-green-200/50' 
+                : 'bg-pastel-rose-200/50'
+            }`}>
+              {toast.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              )}
+            </div>
             <p className="flex-1 text-sm font-medium">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}
-              className="flex-shrink-0 hover:opacity-70"
+              className={`flex-shrink-0 p-1 rounded-lg transition-all duration-200 hover:scale-110 ${
+                toast.type === 'success' 
+                  ? 'hover:bg-pastel-green-200/50' 
+                  : 'hover:bg-pastel-rose-200/50'
+              }`}
             >
               <X className="w-4 h-4" />
             </button>

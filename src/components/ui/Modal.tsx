@@ -31,31 +31,33 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm fade-in">
       <div
-        className="absolute inset-0 bg-gradient-to-br from-black/30 to-black/50"
+        className="absolute inset-0 bg-gradient-to-br from-pastel-neutral-900/40 to-pastel-neutral-800/60"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
-        className={`relative bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col border border-white/20`}
+        className={`relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-pastel-lg w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col border border-pastel-neutral-200/30 slide-up`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
-          <h2 id="modal-title" className="text-2xl font-bold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-pastel-neutral-200/30">
+          <h2 id="modal-title" className="text-2xl font-bold text-gradient-primary">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl p-2 transition-all duration-200"
+            className="text-pastel-neutral-400 hover:text-pastel-rose-600 hover:bg-pastel-rose-50 rounded-xl p-2.5 transition-all duration-300 group"
             aria-label="Close modal"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6 group-hover:scale-110 transition-transform duration-200" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-b from-transparent to-pastel-blue-50/20">
+          {children}
+        </div>
       </div>
     </div>
   );
