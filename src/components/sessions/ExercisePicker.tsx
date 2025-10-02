@@ -4,6 +4,7 @@ import { exercisesService } from '../../services/exercises';
 import { Exercise } from '../../types';
 import { Loader } from '../ui/Loader';
 import { getResponsiveImageUrl, getResponsiveImageSrcSet } from '../../services/imageUpload';
+import { matchesSearchTerm } from '../../utils/searchUtils';
 
 interface ExercisePickerProps {
   isOpen: boolean;
@@ -27,7 +28,8 @@ export function ExercisePicker({ isOpen, onClose, onSelect }: ExercisePickerProp
     if (searchTerm) {
       setFilteredExercises(
           exercises.filter((ex) =>
-              ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+              matchesSearchTerm(searchTerm, ex.name) ||
+              (ex.notes && matchesSearchTerm(searchTerm, ex.notes))
           )
       );
     } else {

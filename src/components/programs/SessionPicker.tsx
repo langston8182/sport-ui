@@ -3,6 +3,7 @@ import { Search, X } from 'lucide-react';
 import { sessionsService } from '../../services/sessions';
 import { Session } from '../../types';
 import { Loader } from '../ui/Loader';
+import { matchesSearchTerm } from '../../utils/searchUtils';
 
 interface SessionPickerProps {
   isOpen: boolean;
@@ -26,7 +27,7 @@ export function SessionPicker({ isOpen, onClose, onSelect }: SessionPickerProps)
     if (searchTerm) {
       setFilteredSessions(
         sessions.filter((s) =>
-          s.name.toLowerCase().includes(searchTerm.toLowerCase())
+          matchesSearchTerm(searchTerm, s.name)
         )
       );
     } else {

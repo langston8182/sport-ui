@@ -9,6 +9,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useToast } from '../components/ui/Toast';
 import { ImageModal } from '../components/ui/ImageModal';
 import { getResponsiveImageUrl, getResponsiveImageSrcSet } from '../services/imageUpload';
+import { matchesSearchTerm } from '../utils/searchUtils';
 
 export function ExercisesList() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -31,7 +32,8 @@ export function ExercisesList() {
 
     if (searchTerm) {
       filtered = filtered.filter((ex) =>
-          ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+          matchesSearchTerm(searchTerm, ex.name) ||
+          (ex.notes && matchesSearchTerm(searchTerm, ex.notes))
       );
     }
 

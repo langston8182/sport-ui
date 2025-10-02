@@ -11,6 +11,7 @@ import { SessionForm } from './pages/SessionForm';
 import { ProgramsList } from './pages/ProgramsList';
 import { ProgramForm } from './pages/ProgramForm';
 import TabataTimer from './pages/TabataTimer';
+import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
 
 function App() {
@@ -37,7 +38,8 @@ function App() {
                     <Route path="/programs/new" element={<ProgramForm />} />
                     <Route path="/programs/:id" element={<ProgramForm />} />
                     <Route path="/programs/:id/edit" element={<ProgramForm />} />
-                    <Route path="/timer" element={<TabataTimer />} />
+                    <Route path="/timer/tabata" element={<TabataTimer />} />
+                    <Route path="/timer" element={<Timer />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Dumbbell, ListChecks, CalendarDays, Plus } from 'lucide-react';
+import { Dumbbell, ListChecks, CalendarDays, Plus, Clock, Timer } from 'lucide-react';
 import { exercisesService } from '../services/exercises';
 import { sessionsService } from '../services/sessions';
 import { programsService } from '../services/programs';
@@ -133,6 +133,51 @@ export function Dashboard() {
               </div>
             </Link>
           ))}
+        </div>
+      </div>
+
+      <div className="card-pastel p-8 mt-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pastel-orange-400 to-pastel-red-400 flex items-center justify-center">
+            <Clock className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-pastel-neutral-800">Outils d'entraînement</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <Link
+            to="/timer"
+            className="flex items-center gap-4 p-6 bg-gradient-to-br from-pastel-blue-50 to-pastel-blue-100 rounded-2xl hover:from-pastel-blue-100 hover:to-pastel-blue-200 transition-all duration-300 group border border-pastel-blue-200/50"
+          >
+            <div className="w-12 h-12 rounded-xl bg-pastel-blue-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+              <Clock className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <span className="text-pastel-blue-700 font-semibold block text-lg">
+                Chronomètre
+              </span>
+              <span className="text-pastel-blue-600 text-sm">
+                Chronométrage et compte à rebours
+              </span>
+            </div>
+          </Link>
+          
+          <Link
+            to="/timer/tabata"
+            className="flex items-center gap-4 p-6 bg-gradient-to-br from-pastel-orange-50 to-pastel-red-50 rounded-2xl hover:from-pastel-orange-100 hover:to-pastel-red-100 transition-all duration-300 group border border-pastel-orange-200/50"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-pastel-orange-500 to-pastel-red-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+              <Timer className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <span className="text-pastel-orange-700 font-semibold block text-lg">
+                Tabata Timer
+              </span>
+              <span className="text-pastel-orange-600 text-sm">
+                Entraînement par intervalles
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

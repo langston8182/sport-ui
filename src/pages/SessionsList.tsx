@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, CreditCard as Edit, Trash2, Search, ListChecks, Play } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Search, Play, ListChecks } from 'lucide-react';
 import { sessionsService } from '../services/sessions';
 import { exercisesService } from '../services/exercises';
 import { Session, Exercise } from '../types';
@@ -8,6 +8,7 @@ import { Loader } from '../components/ui/Loader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useToast } from '../components/ui/Toast';
+import { matchesSearchTerm } from '../utils/searchUtils';
 
 export function SessionsList() {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -30,7 +31,7 @@ export function SessionsList() {
     if (searchTerm) {
       setFilteredSessions(
           sessions.filter((session) =>
-              session.name.toLowerCase().includes(searchTerm.toLowerCase())
+              matchesSearchTerm(searchTerm, session.name)
           )
       );
     } else {

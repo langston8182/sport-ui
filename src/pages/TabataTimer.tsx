@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Settings } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, ArrowLeft, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function TabataTimer() {
+    const navigate = useNavigate();
     const [workTime, setWorkTime] = useState(20);
     const [restTime, setRestTime] = useState(10);
     const [rounds, setRounds] = useState(8);
@@ -86,13 +88,31 @@ export default function TabataTimer() {
 
             <div className="max-w-2xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">Chronomètre Tabata</h1>
-                    <button
-                        onClick={() => setShowSettings(!showSettings)}
-                        className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
-                    >
-                        <Settings className="w-5 h-5 text-gray-600" />
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                            <span>Retour</span>
+                        </button>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">Tabata Timer</h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/timer')}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all shadow-lg"
+                        >
+                            <Clock className="w-4 h-4" />
+                            <span>Chronomètre</span>
+                        </button>
+                        <button
+                            onClick={() => setShowSettings(!showSettings)}
+                            className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <Settings className="w-5 h-5 text-gray-600" />
+                        </button>
+                    </div>
                 </div>
 
                 {showSettings && (

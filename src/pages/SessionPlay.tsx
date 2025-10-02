@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useSessionProgress } from '../hooks/useSessionProgress';
 import type { Session, Exercise, SessionItem } from '../types';
@@ -102,7 +102,22 @@ export default function SessionPlay() {
             const next = prev.map((arr, i) => {
                 if (i !== exerciseIndex) return arr;
                 const copy = [...arr];
+                const wasCompleted = copy[setIndex];
                 copy[setIndex] = !copy[setIndex];
+                
+                // Si on vient de compléter une série ET qu'il y a un temps de repos
+                if (!wasCompleted && copy[setIndex]) {
+                    const item = session.items[exerciseIndex];
+                    const restTime = item.restSec || 0;
+                    const totalSets = copy.length;
+                    const completedSets = copy.filter(Boolean).length;
+                    
+                    // Démarrer le timer seulement si ce n'est pas la dernière série et qu'il y a un temps de repos
+                    if (completedSets < totalSets && restTime > 0) {
+                        startRestTimer(exerciseIndex, setIndex, restTime);
+                    }
+                }
+                
                 return copy;
             });
             const allSetsDone = next[exerciseIndex].every(Boolean);
@@ -119,6 +134,16 @@ export default function SessionPlay() {
     const [showModal, setShowModal] = useState(false);
     const [modalExercise, setModalExercise] = useState<Exercise | null>(null);
     const [modalItem, setModalItem] = useState<SessionItem | null>(null);
+    
+    // Timer de repos
+    const [restTimer, setRestTimer] = useState<{
+        exerciseIndex: number;
+        setIndex: number;
+        timeLeft: number;
+        totalTime: number;
+        isActive: boolean;
+    } | null>(null);
+    const restTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const openExerciseModal = (index: number) => {
         const item = session.items[index];
@@ -134,6 +159,60 @@ export default function SessionPlay() {
         setModalItem(null);
         setModalExercise(null);
     };
+
+    // Fonctions du timer de repos
+    const startRestTimer = (exerciseIndex: number, setIndex: number, restTime: number) => {
+        if (restTime > 0) {
+            setRestTimer({
+                exerciseIndex,
+                setIndex,
+                timeLeft: restTime,
+                totalTime: restTime,
+                isActive: true
+            });
+        }
+    };
+
+    const stopRestTimer = () => {
+        setRestTimer(null);
+        if (restTimerRef.current) {
+            clearTimeout(restTimerRef.current);
+            restTimerRef.current = null;
+        }
+    };
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+    };
+
+    // Gestion du timer de repos
+    useEffect(() => {
+        if (restTimer && restTimer.isActive && restTimer.timeLeft > 0) {
+            restTimerRef.current = setTimeout(() => {
+                setRestTimer(prev => prev ? {
+                    ...prev,
+                    timeLeft: prev.timeLeft - 1
+                } : null);
+            }, 1000);
+        } else if (restTimer && restTimer.timeLeft === 0) {
+            // Timer terminé
+            console.log('Temps de repos terminé !');
+            setRestTimer(prev => prev ? { ...prev, isActive: false } : null);
+            if (restTimerRef.current) {
+                clearTimeout(restTimerRef.current);
+                restTimerRef.current = null;
+            }
+        }
+        
+        return () => {
+            if (restTimerRef.current) {
+                clearTimeout(restTimerRef.current);
+                restTimerRef.current = null;
+            }
+        };
+    }, [restTimer]);
 
     // Fonction pour mettre à jour les notes d'un exercice
     const updateExerciseNote = async (exerciseIndex: number, note: string) => {
@@ -322,6 +401,94 @@ export default function SessionPlay() {
                     sessionItem={modalItem}
                     onClose={closeExerciseModal}
                 />
+            )}
+
+            {/* Timer de repos */}
+            {restTimer && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 mx-4 max-w-sm w-full text-center">
+                        <div className="mb-4">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Temps de repos</h3>
+                            <p className="text-gray-600 text-sm">
+                                {session.items[restTimer.exerciseIndex] && exercises[session.items[restTimer.exerciseIndex].exerciseId]?.name}
+                            </p>
+                            <p className="text-gray-500 text-xs">
+                                Série {restTimer.setIndex + 1} terminée
+                            </p>
+                        </div>
+                        
+                        <div className="mb-6">
+                            <div className="text-6xl font-mono font-bold text-blue-600 mb-4">
+                                {formatTime(restTimer.timeLeft)}
+                            </div>
+                            
+                            {/* Barre de progression circulaire */}
+                            <div className="relative w-32 h-32 mx-auto mb-4">
+                                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+                                    <circle
+                                        cx="64"
+                                        cy="64"
+                                        r="56"
+                                        stroke="currentColor"
+                                        strokeWidth="8"
+                                        fill="none"
+                                        className="text-gray-200"
+                                    />
+                                    <circle
+                                        cx="64"
+                                        cy="64"
+                                        r="56"
+                                        stroke="currentColor"
+                                        strokeWidth="8"
+                                        fill="none"
+                                        strokeLinecap="round"
+                                        className={`transition-all duration-1000 ${
+                                            restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
+                                        }`}
+                                        strokeDasharray={`${2 * Math.PI * 56}`}
+                                        strokeDashoffset={`${2 * Math.PI * 56 * (restTimer.timeLeft / restTimer.totalTime)}`}
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className={`text-2xl font-bold ${
+                                        restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
+                                    }`}>
+                                        {Math.round((1 - restTimer.timeLeft / restTimer.totalTime) * 100)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                            <button
+                                onClick={stopRestTimer}
+                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                            >
+                                Ignorer
+                            </button>
+                            {restTimer.timeLeft === 0 && (
+                                <button
+                                    onClick={stopRestTimer}
+                                    className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                                >
+                                    Continuer
+                                </button>
+                            )}
+                        </div>
+                        
+                        {restTimer.timeLeft <= 10 && restTimer.timeLeft > 0 && (
+                            <p className="text-red-500 text-sm mt-3 font-medium animate-pulse">
+                                Préparez-vous !
+                            </p>
+                        )}
+                        
+                        {restTimer.timeLeft === 0 && (
+                            <p className="text-green-600 text-lg mt-3 font-bold animate-bounce">
+                                🎉 Repos terminé !
+                            </p>
+                        )}
+                    </div>
+                </div>
             )}
         </div>
     );

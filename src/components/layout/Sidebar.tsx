@@ -1,12 +1,16 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer, Clock } from 'lucide-react';
 
 const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Tableau de bord', exact: true },
     { to: '/exercises', icon: Dumbbell, label: 'Exercices' },
     { to: '/sessions', icon: ListChecks, label: 'Sessions' },
     { to: '/programs', icon: CalendarDays, label: 'Programmes' },
-    { to: '/timer', icon: Timer, label: 'Chronomètre' },
+];
+
+const timerItems = [
+    { to: '/timer', icon: Clock, label: 'Chronomètre' },
+    { to: '/timer/tabata', icon: Timer, label: 'Tabata Timer' },
 ];
 
 export function Sidebar() {
@@ -37,6 +41,30 @@ export function Sidebar() {
                         <span className="font-medium">{label}</span>
                     </NavLink>
                 ))}
+                
+                <div className="mt-6 pt-4 border-t border-pastel-neutral-200/50">
+                    <h3 className="text-xs font-semibold text-pastel-neutral-500 uppercase tracking-wider mb-3">Outils</h3>
+                    {timerItems.map(({ to, icon: Icon, label }) => (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            className={({ isActive }) =>
+                                `nav-item ${
+                                    isActive
+                                        ? 'nav-item-active'
+                                        : ''
+                                }`
+                            }
+                        >
+                            <div className={`p-2 rounded-lg transition-all duration-300 ${
+                                'group-hover:bg-pastel-blue-100/50'
+                            }`}>
+                                <Icon className="w-5 h-5 flex-shrink-0" />
+                            </div>
+                            <span className="font-medium">{label}</span>
+                        </NavLink>
+                    ))}
+                </div>
                 
                 <div className="mt-8 pt-6 border-t border-pastel-neutral-200/50">
                     <div className="px-4 py-3 rounded-xl bg-gradient-to-br from-pastel-blue-50 to-pastel-purple-50 border border-pastel-blue-200/30">
