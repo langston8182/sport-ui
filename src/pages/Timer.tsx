@@ -95,24 +95,24 @@ export default function Timer() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-pastel-blue-50 to-pastel-purple-50">
-            <div className="max-w-lg mx-auto p-6">
+            <div className="max-w-4xl mx-auto p-4 sm:p-6">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                         <button
                             onClick={() => navigate(-1)}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                         >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span>Retour</span>
+                            <ArrowLeft className="w-4 sm:w-5 h-4 sm:h-5" />
+                            <span className="text-sm sm:text-base">Retour</span>
                         </button>
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+                        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
                             Chronomètre
                         </h1>
                     </div>
                     <button
                         onClick={() => navigate('/timer/tabata')}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg"
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg text-sm sm:text-base"
                     >
                         <TimerIcon className="w-4 h-4" />
                         <span>Tabata Timer</span>
@@ -120,11 +120,11 @@ export default function Timer() {
                 </div>
 
                 {/* Mode Selector */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
-                    <div className="flex gap-2 mb-6">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-4 sm:mb-6">
+                    <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6">
                         <button
                             onClick={() => handleModeChange('stopwatch')}
-                            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+                            className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${
                                 mode === 'stopwatch'
                                     ? 'bg-gradient-to-r from-pastel-blue-500 to-pastel-purple-500 text-white shadow-lg'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -134,7 +134,7 @@ export default function Timer() {
                         </button>
                         <button
                             onClick={() => handleModeChange('countdown')}
-                            className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+                            className={`flex-1 py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${
                                 mode === 'countdown'
                                     ? 'bg-gradient-to-r from-pastel-blue-500 to-pastel-purple-500 text-white shadow-lg'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -146,17 +146,17 @@ export default function Timer() {
 
                     {/* Countdown Duration Settings */}
                     {mode === 'countdown' && (
-                        <div className="mb-6">
-                            <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <div className="mb-4 sm:mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2 sm:mb-3">
                                 Durée (minutes)
                             </label>
-                            <div className="flex gap-2 flex-wrap">
+                            <div className="grid grid-cols-4 sm:flex gap-1 sm:gap-2 flex-wrap">
                                 {[1, 2, 3, 5, 10, 15, 20, 30].map((minutes) => (
                                     <button
                                         key={minutes}
                                         onClick={() => handleCountdownDurationChange(minutes)}
                                         disabled={isRunning}
-                                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                        className={`px-2 sm:px-4 py-1 sm:py-2 rounded-md sm:rounded-lg font-medium transition-all text-xs sm:text-sm ${
                                             countdownDuration === minutes * 60
                                                 ? 'bg-pastel-blue-500 text-white'
                                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -170,8 +170,8 @@ export default function Timer() {
                     )}
 
                     {/* Timer Display */}
-                    <div className="text-center mb-8">
-                        <div className={`text-6xl font-mono font-bold mb-4 ${
+                    <div className="text-center mb-6 sm:mb-8">
+                        <div className={`text-4xl sm:text-5xl md:text-6xl font-mono font-bold mb-2 sm:mb-4 break-all ${
                             mode === 'countdown' && time <= 10 && time > 0 
                                 ? 'text-red-500 animate-pulse' 
                                 : 'text-gray-800'
@@ -180,38 +180,38 @@ export default function Timer() {
                         </div>
                         
                         {mode === 'countdown' && (
-                            <div className="text-sm text-gray-500">
+                            <div className="text-xs sm:text-sm text-gray-500">
                                 {time === 0 ? 'Terminé !' : `${mode === 'countdown' ? 'Temps restant' : 'Temps écoulé'}`}
                             </div>
                         )}
                     </div>
 
                     {/* Controls */}
-                    <div className="flex justify-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
                         {!isRunning ? (
                             <button
                                 onClick={handleStart}
                                 disabled={mode === 'countdown' && time === 0}
-                                className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
                             >
-                                <Play className="w-6 h-6" />
+                                <Play className="w-5 sm:w-6 h-5 sm:h-6" />
                                 Démarrer
                             </button>
                         ) : (
                             <button
                                 onClick={handlePause}
-                                className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                                className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm sm:text-base"
                             >
-                                <Pause className="w-6 h-6" />
+                                <Pause className="w-5 sm:w-6 h-5 sm:h-6" />
                                 Pause
                             </button>
                         )}
                         
                         <button
                             onClick={handleReset}
-                            className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+                            className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl sm:rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm sm:text-base"
                         >
-                            <RotateCcw className="w-6 h-6" />
+                            <RotateCcw className="w-5 sm:w-6 h-5 sm:h-6" />
                             Reset
                         </button>
                     </div>
@@ -219,14 +219,14 @@ export default function Timer() {
 
                 {/* Progress Bar for Countdown */}
                 {mode === 'countdown' && initialCountdown > 0 && (
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-                        <div className="mb-2 flex justify-between text-sm text-gray-600">
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6">
+                        <div className="mb-2 flex justify-between text-xs sm:text-sm text-gray-600">
                             <span>Progression</span>
                             <span>{Math.round(((initialCountdown - time) / initialCountdown) * 100)}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3">
                             <div
-                                className="bg-gradient-to-r from-pastel-blue-500 to-pastel-purple-500 h-3 rounded-full transition-all duration-1000"
+                                className="bg-gradient-to-r from-pastel-blue-500 to-pastel-purple-500 h-2 sm:h-3 rounded-full transition-all duration-1000"
                                 style={{ width: `${((initialCountdown - time) / initialCountdown) * 100}%` }}
                             ></div>
                         </div>
