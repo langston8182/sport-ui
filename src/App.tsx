@@ -13,6 +13,7 @@ import { ProgramForm } from './pages/ProgramForm';
 import TabataTimer from './pages/TabataTimer';
 import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
+import WeightTracker from './pages/WeightTracker';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
                     <Route path="/programs/:id/edit" element={<ProgramForm />} />
                     <Route path="/timer/tabata" element={<TabataTimer />} />
                     <Route path="/timer" element={<Timer />} />
+                    <Route path="/weight" element={<WeightTracker />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>

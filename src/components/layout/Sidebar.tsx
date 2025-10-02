@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer, Clock } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer, Clock, Scale } from 'lucide-react';
 
 const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Tableau de bord', exact: true },
     { to: '/exercises', icon: Dumbbell, label: 'Exercices' },
     { to: '/sessions', icon: ListChecks, label: 'Sessions' },
     { to: '/programs', icon: CalendarDays, label: 'Programmes' },
+    { to: '/weight', icon: Scale, label: 'Suivi du Poids' },
 ];
 
 const timerItems = [

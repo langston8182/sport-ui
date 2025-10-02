@@ -39,3 +39,13 @@ export interface Program {
   sessionsPerWeek: number;
   schedule: ScheduleEntry[];
 }
+
+export interface WeightEntry {
+  _id: string;
+  weight: number;
+  unit: 'kg' | 'lbs';
+  measureDate: string;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

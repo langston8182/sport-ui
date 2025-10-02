@@ -262,15 +262,15 @@ export default function SessionPlay() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto p-4">
+        <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent break-words">
                     {session.name}
                 </h1>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     <button
-                        className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200"
+                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm sm:text-base transition-colors"
                         onClick={() => {
                             reset();
                             // réinitialise aussi les séries
@@ -285,7 +285,7 @@ export default function SessionPlay() {
                         Réinitialiser
                     </button>
                     <button
-                        className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base transition-colors"
                         onClick={() => {
                             setAll(true);
                             setSetsProgress(
@@ -302,15 +302,15 @@ export default function SessionPlay() {
             </div>
 
             {/* Compteur */}
-            <div className="mb-4 text-gray-700">
-                {completedCount}/{session.items.length} exercices validés
+            <div className="mb-3 sm:mb-4 text-sm sm:text-base text-gray-700">
+                <span className="font-medium">{completedCount}/{session.items.length} exercices validés</span>
                 {isCompleted && (
-                    <span className="ml-2 text-emerald-700 font-semibold">Séance terminée 🎉</span>
+                    <span className="block sm:inline sm:ml-2 text-emerald-700 font-semibold mt-1 sm:mt-0">Séance terminée 🎉</span>
                 )}
             </div>
 
             {/* Liste des exercices */}
-            <ul className="space-y-3">
+            <ul className="space-y-2 sm:space-y-3">
                 {session.items.map((item, index) => {
                     const ex = exercises[item.exerciseId];
                     const isReps = ex?.mode === 'reps';
@@ -324,26 +324,26 @@ export default function SessionPlay() {
                         <li
                             key={index}
                             className={`
-                                p-5 rounded-xl ${rowClasses} 
-                                flex items-center justify-between cursor-pointer
+                                p-3 sm:p-4 lg:p-5 rounded-lg sm:rounded-xl ${rowClasses} 
+                                flex flex-col lg:flex-row gap-3 lg:gap-4 cursor-pointer
                                 transition-all duration-300 ease-out
-                                hover:scale-[1.02] hover:shadow-lg
+                                hover:scale-[1.01] sm:hover:scale-[1.02] hover:shadow-lg
                                 ${done[index] ? 'hover:shadow-emerald-500/10' : 'hover:shadow-gray-500/10'}
                             `}
                             onClick={() => openExerciseModal(index)}
                         >
-                            <div className="pr-4">
-                                <div className="font-medium text-gray-900">
+                            <div className="flex-1 lg:pr-4">
+                                <div className="font-medium text-gray-900 text-sm sm:text-base">
                                     {ex ? ex.name : `Exercice #${index + 1}`}
                                 </div>
-                                <div className="text-gray-600 text-sm">
+                                <div className="text-gray-600 text-xs sm:text-sm mt-1">
                                     {formatSummary(item, ex)}
                                 </div>
                                 {item.restSec ? (
-                                    <div className="text-gray-600 text-sm">Repos {item.restSec}s</div>
+                                    <div className="text-gray-600 text-xs sm:text-sm">Repos {item.restSec}s</div>
                                 ) : null}
                                 {/* Zone de notes */}
-                                <div className="mt-2">
+                                <div className="mt-2 sm:mt-3">
                                     <textarea
                                         placeholder="Ajouter une note pour cet exercice..."
                                         value={itemNotes[index] || ''}
@@ -359,14 +359,14 @@ export default function SessionPlay() {
                                             updateExerciseNote(index, note);
                                         }}
                                         onClick={(e) => e.stopPropagation()}
-                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-gray-200 rounded-md sm:rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                         rows={2}
                                     />
                                 </div>
                             </div>
 
                             {/* Validation */}
-                            <div onClick={(e) => e.stopPropagation()}>
+                            <div onClick={(e) => e.stopPropagation()} className="flex-shrink-0 lg:self-center">
                                 {multipleSets ? (
                                     <SetProgressIndicator
                                         setsCompleted={setsProgress[index]}
@@ -374,7 +374,7 @@ export default function SessionPlay() {
                                         exerciseName={ex ? ex.name : `Exercice #${index + 1}`}
                                     />
                                 ) : (
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center lg:justify-start gap-2 sm:gap-3">
                                         <ProgressDot
                                             completed={!!done[index]}
                                             onClick={() => toggle(index)}
@@ -382,7 +382,7 @@ export default function SessionPlay() {
                                             label={`${ex ? ex.name : `Exercice #${index + 1}`} - Terminé`}
                                             showCheck={true}
                                         />
-                                        <span className="text-sm text-gray-700 font-medium">
+                                        <span className="text-xs sm:text-sm text-gray-700 font-medium">
                                             {done[index] ? 'Terminé' : 'À faire'}
                                         </span>
                                     </div>
@@ -405,11 +405,11 @@ export default function SessionPlay() {
 
             {/* Timer de repos */}
             {restTimer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 mx-4 max-w-sm w-full text-center">
-                        <div className="mb-4">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Temps de repos</h3>
-                            <p className="text-gray-600 text-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-xs sm:max-w-sm text-center">
+                        <div className="mb-3 sm:mb-4">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Temps de repos</h3>
+                            <p className="text-gray-600 text-xs sm:text-sm break-words">
                                 {session.items[restTimer.exerciseIndex] && exercises[session.items[restTimer.exerciseIndex].exerciseId]?.name}
                             </p>
                             <p className="text-gray-500 text-xs">
@@ -417,14 +417,14 @@ export default function SessionPlay() {
                             </p>
                         </div>
                         
-                        <div className="mb-6">
-                            <div className="text-6xl font-mono font-bold text-blue-600 mb-4">
+                        <div className="mb-4 sm:mb-6">
+                            <div className="text-4xl sm:text-5xl lg:text-6xl font-mono font-bold text-blue-600 mb-3 sm:mb-4">
                                 {formatTime(restTimer.timeLeft)}
                             </div>
                             
                             {/* Barre de progression circulaire */}
-                            <div className="relative w-32 h-32 mx-auto mb-4">
-                                <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 128 128">
+                            <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 mx-auto mb-3 sm:mb-4">
+                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
                                     <circle
                                         cx="64"
                                         cy="64"
@@ -450,7 +450,7 @@ export default function SessionPlay() {
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className={`text-2xl font-bold ${
+                                    <span className={`text-lg sm:text-xl lg:text-2xl font-bold ${
                                         restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
                                     }`}>
                                         {Math.round((1 - restTimer.timeLeft / restTimer.totalTime) * 100)}%
@@ -459,17 +459,17 @@ export default function SessionPlay() {
                             </div>
                         </div>
                         
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                             <button
                                 onClick={stopRestTimer}
-                                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                                className="flex-1 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base"
                             >
                                 Ignorer
                             </button>
                             {restTimer.timeLeft === 0 && (
                                 <button
                                     onClick={stopRestTimer}
-                                    className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                                    className="flex-1 px-3 sm:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm sm:text-base"
                                 >
                                     Continuer
                                 </button>
@@ -477,13 +477,13 @@ export default function SessionPlay() {
                         </div>
                         
                         {restTimer.timeLeft <= 10 && restTimer.timeLeft > 0 && (
-                            <p className="text-red-500 text-sm mt-3 font-medium animate-pulse">
+                            <p className="text-red-500 text-xs sm:text-sm mt-2 sm:mt-3 font-medium animate-pulse">
                                 Préparez-vous !
                             </p>
                         )}
                         
                         {restTimer.timeLeft === 0 && (
-                            <p className="text-green-600 text-lg mt-3 font-bold animate-bounce">
+                            <p className="text-green-600 text-sm sm:text-base lg:text-lg mt-2 sm:mt-3 font-bold animate-bounce">
                                 🎉 Repos terminé !
                             </p>
                         )}
