@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, CreditCard as Edit, GripVertical } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, CreditCard as Edit, GripVertical, Play } from 'lucide-react';
 import { sessionsService } from '../services/sessions';
 import { exercisesService } from '../services/exercises';
 import { Session, SessionItem, Exercise } from '../types';
@@ -202,13 +202,30 @@ export function SessionForm() {
               {isView ? name || 'Session Details' : isEdit ? 'Edit Session' : 'New Session'}
             </h1>
             {isView && (
-                <button
-                    onClick={() => navigate(`/sessions/${id}/edit`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span>Edit</span>
-                </button>
+                <div className="flex gap-2">
+                  {/* Play button to navigate to training mode. Pass the session and exercises via route state. */}
+                  <button
+                      type="button"
+                      onClick={() => {
+                        const sessionObj = { id: id as string, name, items } as Session;
+                        navigate(`/sessions/${id}/play`, {
+                          state: { session: sessionObj, exercises },
+                        });
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                  >
+                    <Play className="w-4 h-4" />
+                    <span>Play</span>
+                  </button>
+                  {/* Edit button remains unchanged */}
+                  <button
+                      onClick={() => navigate(`/sessions/${id}/edit`)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit</span>
+                  </button>
+                </div>
             )}
           </div>
 

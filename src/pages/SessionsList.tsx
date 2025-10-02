@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, CreditCard as Edit, Trash2, Search, ListChecks } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Search, ListChecks, Play } from 'lucide-react';
 import { sessionsService } from '../services/sessions';
-import { Session } from '../types';
+import { exercisesService } from '../services/exercises';
+import { Session, Exercise } from '../types';
 import { Loader } from '../components/ui/Loader';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -14,11 +15,15 @@ export function SessionsList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  // Store all exercises in a map so we can pass them to the play page without
+  // further backend calls. If exercises fail to load, the map remains empty.
+  const [exercises, setExercises] = useState<Record<string, Exercise>>({});
   const navigate = useNavigate();
   const { showToast } = useToast();
 
   useEffect(() => {
     fetchSessions();
+    fetchExercises();
   }, []);
 
   useEffect(() => {
@@ -42,6 +47,26 @@ export function SessionsList() {
       setSessions([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Fetch all exercises once so that session play mode can resolve exercise
+   * names and details without performing additional backend requests. This
+   * call is optional; if it fails the exercises map will remain empty.
+   */
+  const fetchExercises = async () => {
+    try {
+      const data = await exercisesService.getAll();
+      const dataArray = Array.isArray(data) ? data : [];
+      const exMap: Record<string, Exercise> = {};
+      for (const ex of dataArray) {
+        exMap[ex.id] = ex;
+      }
+      setExercises(exMap);
+    } catch (error) {
+      // Do not show a toast here; exercise data is optional for play mode
+      setExercises({});
     }
   };
 
@@ -162,6 +187,19 @@ export function SessionsList() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end gap-2">
+                            {/* Play session: navigate to training mode without triggering row click */}
+                            <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/sessions/${session.id}/play`, {
+                                    state: { session, exercises },
+                                  });
+                                }}
+                                className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                aria-label="Play session"
+                            >
+                              <Play className="w-4 h-4" />
+                            </button>
                             <button
                                 onClick={(e) => {
                                   e.stopPropagation();
