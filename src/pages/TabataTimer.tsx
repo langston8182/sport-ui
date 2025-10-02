@@ -83,34 +83,34 @@ export default function TabataTimer() {
         : ((workTime - timeLeft) / workTime) * 100;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-2 sm:py-4 md:py-8 px-2 sm:px-4">
             <audio ref={audioRef} src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBD2X2/LFeSsFLIHO8tiJNwgZaLvt55" />
 
-            <div className="max-w-2xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center gap-4">
+            <div className="max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto">
+                <div className="flex flex-col gap-3 mb-4 sm:mb-6 md:mb-8">
+                    <div className="flex items-center justify-between">
                         <button
                             onClick={() => navigate(-1)}
-                            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            className="flex items-center gap-1 px-2 py-1 text-gray-600 hover:text-gray-800 transition-colors"
                         >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span>Retour</span>
-                        </button>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">Tabata Timer</h1>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate('/timer')}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all shadow-lg"
-                        >
-                            <Clock className="w-4 h-4" />
-                            <span>Chronomètre</span>
+                            <ArrowLeft className="w-4 h-4" />
+                            <span className="text-sm">Retour</span>
                         </button>
                         <button
                             onClick={() => setShowSettings(!showSettings)}
-                            className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+                            className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
                         >
-                            <Settings className="w-5 h-5 text-gray-600" />
+                            <Settings className="w-4 h-4 text-gray-600" />
+                        </button>
+                    </div>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent text-center">Tabata Timer</h1>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => navigate('/timer')}
+                            className="flex items-center justify-center gap-1 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all shadow-lg text-sm flex-1"
+                        >
+                            <Clock className="w-4 h-4" />
+                            <span>Chronomètre</span>
                         </button>
                     </div>
                 </div>
@@ -168,7 +168,7 @@ export default function TabataTimer() {
                     </div>
                 )}
 
-                <div className="bg-white rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+                <div className="bg-white rounded-xl sm:rounded-2xl md:rounded-3xl shadow-lg sm:shadow-2xl p-3 sm:p-4 md:p-6 lg:p-8 relative overflow-hidden">
                     <div
                         className={`absolute inset-0 transition-all duration-1000 ${
                             isResting ? 'bg-green-100' : 'bg-blue-100'
@@ -177,12 +177,12 @@ export default function TabataTimer() {
                     />
 
                     <div className="relative z-10">
-                        <div className="text-center mb-8">
-                            <div className="text-sm font-medium text-gray-600 mb-2">
+                        <div className="text-center mb-4 sm:mb-6 md:mb-8">
+                            <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">
                                 Round {currentRound} / {rounds}
                             </div>
                             <div
-                                className={`text-2xl font-bold mb-4 ${
+                                className={`text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-4 ${
                                     isResting ? 'text-green-600' : 'text-blue-600'
                                 }`}
                             >
@@ -190,26 +190,26 @@ export default function TabataTimer() {
                             </div>
                         </div>
 
-                        <div className="relative w-64 h-64 mx-auto mb-8">
-                            <svg className="transform -rotate-90 w-64 h-64">
+                        <div className="relative w-32 h-32 xs:w-40 xs:h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto mb-4 sm:mb-6 md:mb-8">
+                            <svg className="transform -rotate-90 w-full h-full" viewBox="0 0 120 120">
                                 <circle
-                                    cx="128"
-                                    cy="128"
-                                    r="120"
+                                    cx="60"
+                                    cy="60"
+                                    r="54"
                                     stroke="currentColor"
-                                    strokeWidth="8"
+                                    strokeWidth="4"
                                     fill="none"
                                     className="text-gray-200"
                                 />
                                 <circle
-                                    cx="128"
-                                    cy="128"
-                                    r="120"
+                                    cx="60"
+                                    cy="60"
+                                    r="54"
                                     stroke="currentColor"
-                                    strokeWidth="8"
+                                    strokeWidth="4"
                                     fill="none"
-                                    strokeDasharray={`${2 * Math.PI * 120}`}
-                                    strokeDashoffset={`${2 * Math.PI * 120 * (1 - progress / 100)}`}
+                                    strokeDasharray={`${2 * Math.PI * 54}`}
+                                    strokeDashoffset={`${2 * Math.PI * 54 * (1 - progress / 100)}`}
                                     className={`transition-all duration-1000 ${
                                         isResting ? 'text-green-500' : 'text-blue-500'
                                     }`}
@@ -217,49 +217,50 @@ export default function TabataTimer() {
                                 />
                             </svg>
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="text-7xl font-bold text-gray-900">{timeLeft}</div>
+                                <div className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900">{timeLeft}</div>
                             </div>
                         </div>
 
-                        <div className="flex justify-center gap-4">
+                        <div className="flex flex-col xs:flex-row justify-center gap-2 sm:gap-3 md:gap-4">
                             {!isRunning ? (
                                 <button
                                     onClick={handleStart}
-                                    className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="flex items-center justify-center gap-2 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg sm:rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
                                 >
-                                    <Play className="w-6 h-6" />
+                                    <Play className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                                     Démarrer
                                 </button>
                             ) : (
                                 <button
                                     onClick={handlePause}
-                                    className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                                    className="flex items-center justify-center gap-2 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg sm:rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
                                 >
-                                    <Pause className="w-6 h-6" />
+                                    <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                                     Pause
                                 </button>
                             )}
                             <button
                                 onClick={handleReset}
-                                className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                                className="flex items-center justify-center gap-2 px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg sm:rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 text-sm sm:text-base"
                             >
-                                <RotateCcw className="w-6 h-6" />
-                                Réinitialiser
+                                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                                <span className="hidden xs:inline">Réinitialiser</span>
+                                <span className="xs:hidden">Reset</span>
                             </button>
                         </div>
 
-                        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-                            <div className="p-4 bg-gray-50 rounded-xl">
-                                <div className="text-sm text-gray-600 mb-1">Travail</div>
-                                <div className="text-2xl font-bold text-gray-900">{workTime}s</div>
+                        <div className="mt-4 sm:mt-6 md:mt-8 grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-4 text-center">
+                            <div className="p-2 sm:p-3 md:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                <div className="text-xs text-gray-600 mb-0.5 sm:mb-1">Travail</div>
+                                <div className="text-sm sm:text-lg md:text-2xl font-bold text-gray-900">{workTime}s</div>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-xl">
-                                <div className="text-sm text-gray-600 mb-1">Repos</div>
-                                <div className="text-2xl font-bold text-gray-900">{restTime}s</div>
+                            <div className="p-2 sm:p-3 md:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                <div className="text-xs text-gray-600 mb-0.5 sm:mb-1">Repos</div>
+                                <div className="text-sm sm:text-lg md:text-2xl font-bold text-gray-900">{restTime}s</div>
                             </div>
-                            <div className="p-4 bg-gray-50 rounded-xl">
-                                <div className="text-sm text-gray-600 mb-1">Total</div>
-                                <div className="text-2xl font-bold text-gray-900">{rounds}</div>
+                            <div className="p-2 sm:p-3 md:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
+                                <div className="text-xs text-gray-600 mb-0.5 sm:mb-1">Total</div>
+                                <div className="text-sm sm:text-lg md:text-2xl font-bold text-gray-900">{rounds}</div>
                             </div>
                         </div>
                     </div>
