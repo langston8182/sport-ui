@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useSessionProgress } from '../hooks/useSessionProgress';
 import type { Session, Exercise, SessionItem } from '../types';
 import ExerciseDetailsModal from '../components/sessions/ExerciseDetailsModal';
+import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
+import { ProgressDot } from '../components/ui/ProgressDot';
 
 interface LocationState {
     session?: Session;
@@ -186,13 +188,19 @@ export default function SessionPlay() {
                     const multipleSets = isReps && (item.sets || 1) > 1;
 
                     const rowClasses = done[index]
-                        ? 'bg-emerald-50 border border-emerald-200'
-                        : 'bg-white border border-gray-200';
+                        ? 'bg-gradient-to-r from-emerald-50 to-emerald-50/80 border border-emerald-200 shadow-sm'
+                        : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-md';
 
                     return (
                         <li
                             key={index}
-                            className={`p-4 rounded-lg ${rowClasses} flex items-center justify-between cursor-pointer`}
+                            className={`
+                                p-5 rounded-xl ${rowClasses} 
+                                flex items-center justify-between cursor-pointer
+                                transition-all duration-300 ease-out
+                                hover:scale-[1.02] hover:shadow-lg
+                                ${done[index] ? 'hover:shadow-emerald-500/10' : 'hover:shadow-gray-500/10'}
+                            `}
                             onClick={() => openExerciseModal(index)}
                         >
                             <div className="pr-4">
@@ -211,42 +219,26 @@ export default function SessionPlay() {
                             </div>
 
                             {/* Validation */}
-                            <div>
+                            <div onClick={(e) => e.stopPropagation()}>
                                 {multipleSets ? (
-                                    <div
-                                        className="flex gap-2"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        {setsProgress[index].map((isDone, setIdx) => (
-                                            <button
-                                                key={setIdx}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleToggleSetDone(index, setIdx);
-                                                }}
-                                                className={
-                                                    isDone
-                                                        ? 'w-5 h-5 rounded-full bg-emerald-600'
-                                                        : 'w-5 h-5 rounded-full border border-gray-300'
-                                                }
-                                                aria-label={`Série ${setIdx + 1}`}
-                                                title={`Série ${setIdx + 1}`}
-                                            />
-                                        ))}
-                                    </div>
+                                    <SetProgressIndicator
+                                        setsCompleted={setsProgress[index]}
+                                        onToggleSet={(setIndex) => handleToggleSetDone(index, setIndex)}
+                                        exerciseName={ex ? ex.name : `Exercice #${index + 1}`}
+                                    />
                                 ) : (
-                                    <label
-                                        className="inline-flex items-center gap-2"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={!!done[index]}
-                                            onChange={() => toggle(index)}
-                                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    <div className="flex items-center gap-3">
+                                        <ProgressDot
+                                            completed={!!done[index]}
+                                            onClick={() => toggle(index)}
+                                            size="lg"
+                                            label={`${ex ? ex.name : `Exercice #${index + 1}`} - Terminé`}
+                                            showCheck={true}
                                         />
-                                        <span className="text-sm text-gray-700">Terminé</span>
-                                    </label>
+                                        <span className="text-sm text-gray-700 font-medium">
+                                            {done[index] ? 'Terminé' : 'À faire'}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </li>

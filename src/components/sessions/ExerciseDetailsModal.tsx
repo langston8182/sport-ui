@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Exercise, SessionItem } from '../../types';
 import { Modal } from '../ui/Modal';
+import { ImageModal } from '../ui/ImageModal';
 import {
     getResponsiveImageUrl,
     getResponsiveImageSrcSet,
@@ -18,6 +20,8 @@ export function ExerciseDetailsModal({
                                          sessionItem,
                                          onClose,
                                      }: ExerciseDetailsModalProps) {
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    
     if (!isOpen) return null;
 
     const isReps = exercise.mode === 'reps';
@@ -27,6 +31,7 @@ export function ExerciseDetailsModal({
     const rest = sessionItem.restSec || 0;
 
     return (
+        <>
         <Modal isOpen={isOpen} onClose={onClose} title={exercise.name} size="lg">
             <div className="space-y-6">
                 {/* Image */}
@@ -35,7 +40,8 @@ export function ExerciseDetailsModal({
                         src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
                         srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
                         alt={exercise.name}
-                        className="w-full h-56 object-cover rounded-xl border border-gray-200"
+                        className="w-full h-64 object-contain bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors"
+                        onClick={() => setIsImageModalOpen(true)}
                     />
                 </div>
 
@@ -70,11 +76,11 @@ export function ExerciseDetailsModal({
                     )}
                 </div>
 
-                {/* Description */}
-                {exercise.description && (
+                {/* Notes de l'exercice */}
+                {exercise.notes && (
                     <div>
-                        <div className="text-sm text-gray-600 mb-1">Description</div>
-                        <p className="text-gray-800 whitespace-pre-line">{exercise.description}</p>
+                        <div className="text-sm text-gray-600 mb-1">Notes de l'exercice</div>
+                        <p className="text-gray-800 whitespace-pre-line">{exercise.notes}</p>
                     </div>
                 )}
 
@@ -87,6 +93,15 @@ export function ExerciseDetailsModal({
                 )}
             </div>
         </Modal>
+        
+        <ImageModal
+            isOpen={isImageModalOpen}
+            onClose={() => setIsImageModalOpen(false)}
+            imageUrl={getResponsiveImageUrl(exercise.imageKeyOriginal)}
+            imageSrcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
+            alt={exercise.name}
+        />
+        </>
     );
 }
 
