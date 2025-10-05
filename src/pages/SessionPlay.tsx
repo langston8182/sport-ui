@@ -266,18 +266,23 @@ export default function SessionPlay() {
     return (
         <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent break-words">
-                    {session.name}
-                </h1>
-
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                    {/* Mini Spotify Player */}
-                    <SpotifyWebPlayer compact={true} className="flex-shrink-0" />
+            <div className="mb-4 sm:mb-6">
+                {/* Title and Spotify */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3">
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent break-words">
+                        {session.name}
+                    </h1>
                     
-                    <div className="flex gap-2 flex-1 sm:flex-none">
+                    {/* Spotify Player */}
+                    <div className="w-full sm:w-auto sm:max-w-sm">
+                        <SpotifyWebPlayer compact={true} className="w-full" />
+                    </div>
+                </div>
+                
+                {/* Action Buttons Row */}
+                <div className="flex gap-2">
                     <button
-                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm sm:text-base transition-colors"
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium transition-colors whitespace-nowrap"
                         onClick={() => {
                             reset();
                             // réinitialise aussi les séries
@@ -292,7 +297,7 @@ export default function SessionPlay() {
                         Réinitialiser
                     </button>
                     <button
-                        className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm sm:text-base transition-colors"
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm font-medium transition-colors whitespace-nowrap"
                         onClick={() => {
                             setAll(true);
                             setSetsProgress(
@@ -305,7 +310,6 @@ export default function SessionPlay() {
                     >
                         Tout valider
                     </button>
-                    </div>
                 </div>
             </div>
 
