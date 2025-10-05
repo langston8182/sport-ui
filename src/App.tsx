@@ -14,8 +14,6 @@ import TabataTimer from './pages/TabataTimer';
 import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
 import WeightTracker from './pages/WeightTracker';
-import { SpotifyAuthCallback } from './pages/SpotifyAuthCallback';
-
 function App() {
   return (
       <BrowserRouter>
@@ -23,7 +21,6 @@ function App() {
           <ToastProvider>
             <Routes>
               <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/spotify" element={<SpotifyAuthCallback />} />
               <Route path="/*" element={
                 <Layout>
                   <Routes>

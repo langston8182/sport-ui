@@ -7,7 +7,7 @@ import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
 import { ProgressDot } from '../components/ui/ProgressDot';
 import { sessionsService } from '../services/sessions';
 import { useToast } from '../components/ui/Toast';
-import { SpotifyWebPlayer } from '../components/ui/SpotifyWebPlayer';
+
 
 interface LocationState {
     session?: Session;
@@ -269,9 +269,7 @@ export default function SessionPlay() {
                 <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent break-words">
                     {session.name}
                 </h1>
-                
-                {/* Mini Spotify Player */}
-                <SpotifyWebPlayer compact={true} className="flex-shrink-0" />
+
                 <div className="flex gap-2 w-full sm:w-auto">
                     <button
                         className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm sm:text-base transition-colors"

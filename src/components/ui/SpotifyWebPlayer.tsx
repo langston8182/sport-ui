@@ -76,12 +76,35 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      // Ne pas déconnecter le player lors du démontage pour permettre la réutilisation
     };
   }, [accessToken]);
 
   // Initialiser le lecteur Spotify
   const initializePlayer = () => {
     if (!accessToken) return;
+
+    // Vérifier si un player existe déjà dans le stockage global
+    const existingPlayer = (window as any).spotifyPlayerInstance;
+    
+    if (existingPlayer && existingPlayer.device_id) {
+      console.log('Réutilisation du player existant');
+      setPlayer(existingPlayer);
+      setDeviceId(existingPlayer.device_id);
+      setIsConnected(true);
+      
+      // Récupérer l'état actuel
+      existingPlayer.getCurrentState().then((state: SpotifyState | null) => {
+        if (state) {
+          setCurrentTrack(state.track_window.current_track);
+          setIsPlaying(!state.paused);
+          setPosition(state.position);
+          setDuration(state.duration);
+        }
+      });
+      
+      return;
+    }
 
     const spotifyPlayer = new window.Spotify.Player({
       name: 'Sport App Player',
@@ -96,11 +119,17 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
       console.log('Ready with Device ID', device_id);
       setDeviceId(device_id);
       setIsConnected(true);
+      
+      // Stocker le player globalement
+      (window as any).spotifyPlayerInstance = spotifyPlayer;
+      spotifyPlayer.device_id = device_id;
     });
 
     spotifyPlayer.addListener('not_ready', ({ device_id }: { device_id: string }) => {
       console.log('Device ID has gone offline', device_id);
       setIsConnected(false);
+      // Nettoyer le stockage global
+      delete (window as any).spotifyPlayerInstance;
     });
 
     spotifyPlayer.addListener('player_state_changed', (state: SpotifyState | null) => {
