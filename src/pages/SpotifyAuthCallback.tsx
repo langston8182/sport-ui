@@ -28,7 +28,7 @@ export function SpotifyAuthCallback() {
           }
 
           const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-          const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI + '/auth/spotify';
+          const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
 
           const response = await fetch('https://accounts.spotify.com/api/token', {
             method: 'POST',

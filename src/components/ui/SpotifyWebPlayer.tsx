@@ -46,8 +46,7 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
 
   // Configuration Spotify depuis les variables d'environnement
   const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || 'demo_client_id';
-  const BASE_URL = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || window.location.origin;
-  const REDIRECT_URI = BASE_URL + '/auth/spotify';
+  const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI || window.location.origin;
   const SCOPES = [
     'streaming',
     'user-read-email',
