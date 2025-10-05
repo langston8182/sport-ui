@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipForward, SkipBack, Music, Volume2, VolumeX, LogOut } from 'lucide-react';
 
 // Types pour Spotify Web Playback SDK
 declare global {
@@ -41,6 +41,9 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [userPlaylists, setUserPlaylists] = useState<any[]>([]);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+  const [changingPlaylist, setChangingPlaylist] = useState(false);
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -79,6 +82,71 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
       // Ne pas déconnecter le player lors du démontage pour permettre la réutilisation
     };
   }, [accessToken]);
+
+  // Charger les playlists utilisateur quand connecté
+  useEffect(() => {
+    if (accessToken && isConnected) {
+      fetchUserPlaylists();
+    }
+  }, [accessToken, isConnected]);
+
+  // Gérer la progression de la position de lecture
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    if (isPlaying && isConnected) {
+      intervalRef.current = setInterval(() => {
+        setPosition(prev => {
+          const newPosition = prev + 1000;
+          // Mettre à jour l'état global aussi
+          const globalState = (window as any).spotifyCurrentState;
+          if (globalState) {
+            (window as any).spotifyCurrentState = {
+              ...globalState,
+              position: newPosition,
+              isPlaying: true
+            };
+          }
+          return newPosition;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPlaying, isConnected]);
+
+  // Synchroniser l'état avec les autres instances
+  useEffect(() => {
+    if (!isConnected) return;
+
+    const syncInterval = setInterval(() => {
+      const globalState = (window as any).spotifyCurrentState;
+      if (globalState) {
+        // Mettre à jour seulement si l'état a changé
+        if (currentTrack?.name !== globalState.track?.name) {
+          setCurrentTrack(globalState.track);
+        }
+        if (isPlaying !== globalState.isPlaying) {
+          setIsPlaying(globalState.isPlaying);
+        }
+        // Synchroniser la position seulement si elle diffère significativement
+        if (Math.abs(position - globalState.position) > 3000) { // Plus de 3 secondes d'écart
+          setPosition(globalState.position);
+        }
+        if (duration !== globalState.duration) {
+          setDuration(globalState.duration);
+        }
+      }
+    }, 2000); // Vérifier toutes les 2 secondes
+
+    return () => clearInterval(syncInterval);
+  }, [isConnected, currentTrack, isPlaying, position, duration]);
 
   // Initialiser le lecteur Spotify
   const initializePlayer = () => {
@@ -139,18 +207,19 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
       setIsPlaying(!state.paused);
       setPosition(state.position);
       setDuration(state.duration);
+      
+      // Stocker l'état global pour synchroniser toutes les instances
+      (window as any).spotifyCurrentState = {
+        track: state.track_window.current_track,
+        isPlaying: !state.paused,
+        position: state.position,
+        duration: state.duration
+      };
     });
 
     // Connecter le lecteur
     spotifyPlayer.connect();
     setPlayer(spotifyPlayer);
-
-    // Mettre à jour la position toutes les secondes
-    intervalRef.current = setInterval(() => {
-      if (isPlaying) {
-        setPosition(prev => prev + 1000);
-      }
-    }, 1000);
   };
 
   // Générer des codes PKCE
@@ -281,12 +350,107 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
     }
   };
 
-  // Lancer une playlist de workout
+  // Déconnexion de Spotify
+  const disconnectSpotify = () => {
+    // Déconnecter le player
+    if (player) {
+      player.disconnect();
+    }
+    
+    // Nettoyer l'état local
+    setPlayer(null);
+    setDeviceId('');
+    setCurrentTrack(null);
+    setIsPlaying(false);
+    setPosition(0);
+    setDuration(0);
+    setIsConnected(false);
+    setAccessToken(null);
+    
+    // Nettoyer le stockage
+    localStorage.removeItem('spotify_access_token');
+    localStorage.removeItem('spotify_token_expiry');
+    localStorage.removeItem('spotify_code_verifier');
+    
+    // Nettoyer le player global
+    delete (window as any).spotifyPlayerInstance;
+    
+    // Nettoyer l'intervalle
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    
+    console.log('Déconnecté de Spotify');
+  };
+
+  // Récupérer les playlists de l'utilisateur
+  const fetchUserPlaylists = async () => {
+    if (!accessToken) return;
+
+    setLoadingPlaylists(true);
+    try {
+      const response = await fetch('https://api.spotify.com/v1/me/playlists?limit=20', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Filtrer pour ne garder que les playlists publiques et celles de l'utilisateur
+        const filteredPlaylists = data.items.filter((playlist: any) => 
+          playlist.public || playlist.owner.id
+        );
+        setUserPlaylists(filteredPlaylists);
+      }
+    } catch (error) {
+      console.error('Error fetching playlists:', error);
+    } finally {
+      setLoadingPlaylists(false);
+    }
+  };
+
+  // Lancer une playlist de workout avec stratégies multiples
   const playWorkoutPlaylist = async (playlistId: string) => {
     if (!accessToken || !deviceId) return;
 
+    setChangingPlaylist(true);
+    console.log('Changement vers playlist:', playlistId);
+    
     try {
-      const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      // Stratégie 1: Arrêt forcé + transfert de device + lecture
+      console.log('Étape 1: Arrêt forcé...');
+      await fetch(`https://api.spotify.com/v1/me/player/pause`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      
+      // Attendre que l'arrêt soit effectif
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Étape 2: Forcer le transfert vers notre device
+      console.log('Étape 2: Transfert device...');
+      await fetch(`https://api.spotify.com/v1/me/player`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          device_ids: [deviceId],
+          play: false
+        })
+      });
+      
+      // Attendre le transfert
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Étape 3: Lancer la nouvelle playlist
+      console.log('Étape 3: Lancement playlist...');
+      let response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -299,11 +463,82 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
         })
       });
 
+      // Si ça échoue, essayer sans device_id spécifique
+      if (!response.ok) {
+        console.log('Tentative 2: Sans device_id...');
+        response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            context_uri: `spotify:playlist:${playlistId}`,
+            offset: { position: 0 },
+            position_ms: 0
+          })
+        });
+      }
+
       if (response.ok) {
-        console.log('Playlist started');
+        console.log('✅ Playlist changée avec succès!');
+        
+        // Vérifier et forcer la mise à jour plusieurs fois pour s'assurer
+        const updateState = async (attempt = 1) => {
+          if (attempt > 3) return; // Max 3 tentatives
+          
+          if (player) {
+            const state = await player.getCurrentState();
+            if (state && state.track_window.current_track) {
+              console.log(`Mise à jour état (tentative ${attempt}):`, state.track_window.current_track.name);
+              setCurrentTrack(state.track_window.current_track);
+              setIsPlaying(!state.paused);
+              setPosition(state.position);
+              setDuration(state.duration);
+              
+              // Mettre à jour l'état global pour toutes les instances
+              (window as any).spotifyCurrentState = {
+                track: state.track_window.current_track,
+                isPlaying: !state.paused,
+                position: state.position,
+                duration: state.duration
+              };
+            } else {
+              // Si pas d'état, réessayer après 1 seconde
+              setTimeout(() => updateState(attempt + 1), 1000);
+            }
+          }
+        };
+        
+        // Première mise à jour immédiate, puis retries
+        setTimeout(() => updateState(1), 500);
+        setTimeout(() => updateState(2), 2000);
+        setTimeout(() => updateState(3), 4000);
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Échec changement playlist:', response.status, errorText);
+        
+        // Essayer une dernière fois avec une approche différente
+        console.log('Dernière tentative: via Web Playback SDK...');
+        if (player) {
+          try {
+            // Utiliser directement le SDK pour changer le contexte
+            await fetch(`https://api.spotify.com/v1/me/player/queue?uri=spotify:playlist:${playlistId}`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${accessToken}`
+              }
+            });
+            console.log('Playlist ajoutée à la queue');
+          } catch (queueError) {
+            console.error('Échec ajout à la queue:', queueError);
+          }
+        }
       }
     } catch (error) {
       console.error('Error playing playlist:', error);
+    } finally {
+      setChangingPlaylist(false);
     }
   };
 
@@ -315,31 +550,30 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Si pas d'authentification
-  if (!accessToken) {
-    return (
-      <div className={`bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 text-white ${className}`}>
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-            <Music className="w-6 h-6" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-bold">Lecteur Spotify intégré</h3>
-            <p className="text-green-100 text-sm">Écoutez directement dans l'app</p>
-          </div>
-          <button
-            onClick={authenticateSpotify}
-            className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-green-50 transition-colors"
-          >
-            Se connecter
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   // Version compacte pour les pages d'entraînement
   if (compact) {
+    // Si pas d'authentification en mode compact
+    if (!accessToken) {
+      return (
+        <div className={`bg-gradient-to-br from-pastel-green-50 to-pastel-green-100 border border-pastel-green-200/50 rounded-lg p-2 md:p-3 ${className}`}>
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-gradient-to-br from-pastel-green-400 to-pastel-green-500 flex items-center justify-center">
+              <Music className="w-3 h-3 md:w-4 md:h-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-pastel-green-800 truncate">Spotify</p>
+              <p className="text-xs text-pastel-green-600 truncate">Non connecté</p>
+            </div>
+            <button
+              onClick={authenticateSpotify}
+              className="bg-gradient-to-r from-pastel-green-500 to-pastel-green-600 text-white px-2 py-1 md:px-3 md:py-1.5 rounded-lg text-xs md:text-sm font-semibold hover:from-pastel-green-600 hover:to-pastel-green-700 transition-all duration-300"
+            >
+              Connexion
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={`bg-white border border-gray-200 rounded-xl p-3 shadow-sm ${className}`}>
         {currentTrack ? (
@@ -377,30 +611,70 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center py-2">
-            <Music className="w-5 h-5 text-gray-400 mr-2" />
-            <span className="text-sm text-gray-500">
-              {isConnected ? 'Prêt à jouer' : 'Connexion...'}
-            </span>
+          <div className="flex items-center justify-between py-2">
+            <div className="flex items-center">
+              <Music className="w-5 h-5 text-gray-400 mr-2" />
+              <span className="text-sm text-gray-500">
+                {isConnected ? 'Prêt à jouer' : 'Connexion...'}
+              </span>
+            </div>
+            <button
+              onClick={disconnectSpotify}
+              className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+              title="Se déconnecter"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         )}
       </div>
     );
   }
 
-  // Version complète
-  return (
-    <div className={`bg-white rounded-2xl border border-gray-200 p-6 shadow-lg ${className}`}>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center">
-          <Music className="w-6 h-6 text-white" />
+  // Version complète - Dashboard
+  // Si pas d'authentification en version complète
+  if (!accessToken) {
+    return (
+      <div className={`card-pastel p-6 md:p-8 bg-gradient-to-br from-pastel-green-50 to-pastel-green-100 border border-pastel-green-200/50 ${className}`}>
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-pastel-green-400 to-pastel-green-500 flex items-center justify-center shadow-lg">
+            <Music className="w-5 h-5 md:w-6 md:h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg md:text-xl font-bold text-pastel-green-800">Lecteur Spotify intégré</h3>
+            <p className="text-pastel-green-700 text-sm md:text-base">Écoutez directement dans l'app</p>
+          </div>
+          <button
+            onClick={authenticateSpotify}
+            className="bg-gradient-to-r from-pastel-green-500 to-pastel-green-600 text-white px-4 py-2 rounded-xl font-semibold hover:from-pastel-green-600 hover:to-pastel-green-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            Se connecter
+          </button>
         </div>
-        <div>
-          <h3 className="text-xl font-bold text-gray-900">Lecteur Spotify</h3>
-          <p className="text-gray-600">
+      </div>
+    );
+  }
+
+  // Version complète avec thème pastel harmonisé (connecté)
+  return (
+    <div className={`card-pastel p-6 md:p-8 ${className}`}>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-pastel-green-400 to-pastel-green-500 flex items-center justify-center shadow-lg">
+          <Music className="w-5 h-5 md:w-6 md:h-6 text-white" />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-xl md:text-2xl font-bold text-pastel-neutral-800">Lecteur Spotify</h3>
+          <p className="text-pastel-neutral-600 text-sm md:text-base">
             {isConnected ? 'Connecté et prêt' : 'Connexion en cours...'}
           </p>
         </div>
+        <button
+          onClick={disconnectSpotify}
+          className="px-3 py-1.5 text-sm text-pastel-red-600 hover:bg-pastel-red-50 rounded-lg transition-colors border border-pastel-red-200 hover:border-pastel-red-300"
+          title="Se déconnecter de Spotify"
+        >
+          Se déconnecter
+        </button>
       </div>
 
       {currentTrack ? (
@@ -487,20 +761,85 @@ export function SpotifyWebPlayer({ className = '', compact = false }: SpotifyWeb
             Ouvrez Spotify et lancez une playlist pour commencer
           </p>
           
-          {/* Boutons de playlists rapides */}
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => playWorkoutPlaylist('37i9dQZF1DX76Wlfdnj7AP')}
-              className="p-3 bg-red-100 hover:bg-red-200 rounded-xl text-red-700 font-medium transition-colors"
-            >
-              🔥 Beast Mode
-            </button>
-            <button
-              onClick={() => playWorkoutPlaylist('37i9dQZF1DX32NsLKyzScr')}
-              className="p-3 bg-blue-100 hover:bg-blue-200 rounded-xl text-blue-700 font-medium transition-colors"
-            >
-              💪 Power Workout
-            </button>
+          {/* Vos playlists */}
+          {loadingPlaylists && (
+            <div className="mb-6">
+              <h5 className="text-sm font-semibold text-gray-700 mb-3">Chargement de vos playlists...</h5>
+              <div className="flex justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+              </div>
+            </div>
+          )}
+          
+          {!loadingPlaylists && userPlaylists.length > 0 && (
+            <div className="mb-6">
+              <h5 className="text-sm font-semibold text-gray-700 mb-3">Vos playlists</h5>
+              <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                {userPlaylists.slice(0, 10).map((playlist) => (
+                  <button
+                    key={playlist.id}
+                    onClick={() => playWorkoutPlaylist(playlist.id)}
+                    className="flex items-center gap-3 p-3 bg-pastel-neutral-50 hover:bg-pastel-green-50 rounded-lg text-left transition-colors border border-pastel-neutral-200 hover:border-pastel-green-300"
+                  >
+                    {playlist.images?.[0] && (
+                      <img
+                        src={playlist.images[0].url}
+                        alt={playlist.name}
+                        className="w-10 h-10 rounded-lg"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-pastel-neutral-800 truncate">{playlist.name}</p>
+                      <p className="text-sm text-pastel-neutral-600 truncate">
+                        {playlist.tracks.total} titres
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Indicateur de changement de playlist */}
+          {changingPlaylist && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span className="text-sm text-blue-700">Changement de playlist...</span>
+              </div>
+            </div>
+          )}
+
+          {/* Playlists de motivation et workout */}
+          <div>
+            <h5 className="text-sm font-semibold text-pastel-neutral-700 mb-3">Motivation & Energy</h5>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Playlists populaires pour le sport et la motivation */}
+              <button
+                onClick={() => playWorkoutPlaylist('37i9dQZF1DX76Wlfdnj7AP')}
+                className="p-3 bg-gradient-to-br from-pastel-orange-50 to-pastel-orange-100 hover:from-pastel-orange-100 hover:to-pastel-orange-200 rounded-xl text-pastel-orange-700 font-medium transition-colors text-sm border border-pastel-orange-200 hover:border-pastel-orange-300"
+              >
+                🔥 Beast Mode
+              </button>
+              <button
+                onClick={() => playWorkoutPlaylist('37i9dQZF1DX32NsLKyzScr')}
+                className="p-3 bg-gradient-to-br from-pastel-blue-50 to-pastel-blue-100 hover:from-pastel-blue-100 hover:to-pastel-blue-200 rounded-xl text-pastel-blue-700 font-medium transition-colors text-sm border border-pastel-blue-200 hover:border-pastel-blue-300"
+              >
+                💪 Power Workout
+              </button>
+              <button
+                onClick={() => playWorkoutPlaylist('37i9dQZF1DX1tyCD9QhIWF')}
+                className="p-3 bg-gradient-to-br from-pastel-purple-50 to-pastel-purple-100 hover:from-pastel-purple-100 hover:to-pastel-purple-200 rounded-xl text-pastel-purple-700 font-medium transition-colors text-sm border border-pastel-purple-200 hover:border-pastel-purple-300"
+              >
+                ⚡ Motivation Mix
+              </button>
+              <button
+                onClick={() => playWorkoutPlaylist('37i9dQZF1DWXLeA8Omikj7')}
+                className="p-3 bg-gradient-to-br from-pastel-green-50 to-pastel-green-100 hover:from-pastel-green-100 hover:to-pastel-green-200 rounded-xl text-pastel-green-700 font-medium transition-colors text-sm border border-pastel-green-200 hover:border-pastel-green-300"
+              >
+                🏃 Cardio Hits
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -7,6 +7,7 @@ import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
 import { ProgressDot } from '../components/ui/ProgressDot';
 import { sessionsService } from '../services/sessions';
 import { useToast } from '../components/ui/Toast';
+import { SpotifyWebPlayer } from '../components/ui/SpotifyWebPlayer';
 
 
 interface LocationState {
@@ -270,7 +271,11 @@ export default function SessionPlay() {
                     {session.name}
                 </h1>
 
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* Mini Spotify Player */}
+                    <SpotifyWebPlayer compact={true} className="flex-shrink-0" />
+                    
+                    <div className="flex gap-2 flex-1 sm:flex-none">
                     <button
                         className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm sm:text-base transition-colors"
                         onClick={() => {
@@ -300,6 +305,7 @@ export default function SessionPlay() {
                     >
                         Tout valider
                     </button>
+                    </div>
                 </div>
             </div>
 
