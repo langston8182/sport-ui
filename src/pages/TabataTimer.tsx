@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Settings, ArrowLeft, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { SpotifyWebPlayer } from '../components/ui/SpotifyWebPlayer';
 
 export default function TabataTimer() {
     const navigate = useNavigate();
@@ -104,6 +105,9 @@ export default function TabataTimer() {
                         </button>
                     </div>
                     <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent text-center">Tabata Timer</h1>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                        <SpotifyWebPlayer compact={true} />
+                    </div>
                     <div className="flex gap-2">
                         <button
                             onClick={() => navigate('/timer')}
