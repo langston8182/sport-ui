@@ -13,8 +13,6 @@ phases:
       - echo "VITE_API_URL=${API_URL}" >> .env
       - echo "VITE_AUTH_BASE_URL=${AUTH_BASE_URL}" >> .env
       - echo "VITE_CDN_URL=${CDN_URL}" >> .env
-      - echo "VITE_SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}" >> .env
-      - echo "VITE_SPOTIFY_REDIRECT_URI=${SPOTIFY_REDIRECT_URI}" >> .env
       - cat .env
       - echo "Récupération des paramètres"
   build:

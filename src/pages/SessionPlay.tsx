@@ -7,7 +7,6 @@ import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
 import { ProgressDot } from '../components/ui/ProgressDot';
 import { sessionsService } from '../services/sessions';
 import { useToast } from '../components/ui/Toast';
-import { SpotifyWebPlayer } from '../components/ui/SpotifyWebPlayer';
 
 
 interface LocationState {
@@ -267,16 +266,11 @@ export default function SessionPlay() {
         <div className="max-w-6xl mx-auto p-3 sm:p-4 lg:p-6">
             {/* Header */}
             <div className="mb-4 sm:mb-6">
-                {/* Title and Spotify */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3">
+                {/* Title */}
+                <div className="mb-3 sm:mb-4">
                     <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent break-words">
                         {session.name}
                     </h1>
-                    
-                    {/* Spotify Player */}
-                    <div className="w-full sm:w-auto sm:max-w-sm">
-                        <SpotifyWebPlayer compact={true} className="w-full" />
-                    </div>
                 </div>
                 
                 {/* Action Buttons Row */}

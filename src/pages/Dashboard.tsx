@@ -6,7 +6,6 @@ import { sessionsService } from '../services/sessions';
 import { programsService } from '../services/programs';
 import { weightsService } from '../services/weights';
 import { Loader } from '../components/ui/Loader';
-import { SpotifyWebPlayer } from '../components/ui/SpotifyWebPlayer';
 
 export function Dashboard() {
   const [counts, setCounts] = useState({
@@ -207,10 +206,6 @@ export function Dashboard() {
             </div>
           </Link>
         </div>
-      </div>
-
-      <div className="mt-6 md:mt-8">
-        <SpotifyWebPlayer compact={false} />
       </div>
     </div>
   );
