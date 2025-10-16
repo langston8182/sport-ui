@@ -49,3 +49,59 @@ export interface WeightEntry {
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Types for exercise weights (new API)
+export type WeightUnit = 'kg' | 'lb';
+
+export interface ExerciseWeight {
+  _id: string;
+  exerciseId: string;
+  sessionId: string;
+  weight: number;
+  unit: WeightUnit;
+  setNumber: number;
+  reps: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExerciseWeightCreate {
+  exerciseId: string;
+  sessionId: string;
+  weight: number;
+  unit: WeightUnit;
+  setNumber: number;
+  reps: number;
+}
+
+export interface ExerciseWeightPatch {
+  weight?: number;
+  unit?: WeightUnit;
+  setNumber?: number;
+  reps?: number;
+}
+
+export interface ProgressPoint {
+  date: string;
+  sessionId: string;
+  setNumber: number;
+  weight: number;
+  unit: WeightUnit;
+  reps: number;
+}
+
+export interface ProgressSession {
+  sessionId: string;
+  date: string;
+  maxWeight: number;
+  totalSets: number;
+  weights: ExerciseWeight[];
+}
+
+export interface ExerciseProgressionData {
+  exerciseId: string;
+  totalSessions: number;
+  maxWeight: number;
+  latestWeight: number;
+  progression: ProgressSession[];
+}

@@ -14,6 +14,7 @@ import TabataTimer from './pages/TabataTimer';
 import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
 import WeightTracker from './pages/WeightTracker';
+import ExerciseProgressionPage from './pages/ExerciseProgressionPage';
 function App() {
   return (
       <BrowserRouter>
@@ -41,6 +42,7 @@ function App() {
                     <Route path="/timer/tabata" element={<TabataTimer />} />
                     <Route path="/timer" element={<Timer />} />
                     <Route path="/weight" element={<WeightTracker />} />
+                    <Route path="/progression" element={<ExerciseProgressionPage />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </Layout>
