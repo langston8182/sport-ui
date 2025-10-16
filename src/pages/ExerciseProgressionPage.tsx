@@ -83,12 +83,22 @@ export default function ExerciseProgressionPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Progression des Exercices</h1>
+    <div className="max-w-7xl mx-auto p-2 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Progression des Exercices</h1>
+        {selectedExercise && (
+          <button
+            onClick={() => setSelectedExercise(null)}
+            className="lg:hidden bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg text-sm font-medium"
+          >
+            ← Retour
+          </button>
+        )}
+      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
         {/* Liste des exercices */}
-        <div className="lg:col-span-1">
+        <div className={`lg:col-span-1 ${selectedExercise ? 'hidden lg:block' : ''}`}>
           <div className="bg-white rounded-lg shadow p-4">
             <h2 className="text-lg font-semibold mb-4">Sélectionner un exercice</h2>
             
@@ -122,11 +132,7 @@ export default function ExerciseProgressionPage() {
                             <button
                               key={exercise.id}
                               onClick={() => setSelectedExercise(exercise)}
-                              className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                                selectedExercise?.id === exercise.id
-                                  ? 'border-blue-500 bg-blue-50'
-                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                              }`}
+                              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
                             >
                               <div className="flex justify-between items-start">
                                 <div className="font-medium">{exercise.name}</div>
@@ -156,11 +162,7 @@ export default function ExerciseProgressionPage() {
                             <button
                               key={exercise.id}
                               onClick={() => setSelectedExercise(exercise)}
-                              className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                                selectedExercise?.id === exercise.id
-                                  ? 'border-blue-500 bg-blue-50'
-                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                              }`}
+                              className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
                             >
                               <div className="font-medium">{exercise.name}</div>
                               <div className="text-sm text-gray-500">
@@ -178,7 +180,7 @@ export default function ExerciseProgressionPage() {
         </div>
 
         {/* Affichage de la progression */}
-        <div className="lg:col-span-2">
+        <div className={`lg:col-span-2 ${!selectedExercise ? 'hidden lg:block' : ''}`}>
           {selectedExercise ? (
             <ExerciseProgression
               exerciseId={selectedExercise.id}
