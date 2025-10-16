@@ -339,6 +339,7 @@ export default function SessionPlay() {
                                                         onWeightSaved={addWeight}
                                                         onWeightDeleted={(weightId) => removeWeight(item.exerciseId, weightId)}
                                                         disabled={weightsLoading}
+                                                        exerciseName={exercises[item.exerciseId]?.name || 'Exercice inconnu'}
                                                     />
                                                 </div>
                                             );
