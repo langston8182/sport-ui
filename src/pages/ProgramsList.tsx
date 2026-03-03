@@ -65,14 +65,14 @@ export function ProgramsList() {
 
   return (
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">Programs</h1>
             <p className="text-gray-600 text-lg">{programs.length} total programs</p>
           </div>
           <Link
               to="/programs/new"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
             <span>New Program</span>
@@ -114,8 +114,57 @@ export function ProgramsList() {
             </div>
         ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="md:hidden divide-y divide-gray-200">
+                {filteredPrograms.map((program) => (
+                    <div
+                        key={program.id}
+                        className="p-4 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => {
+                          localStorage.setItem('currentProgramId', program.id);
+                          navigate(`/programs/${program.id}?mode=view`);
+                        }}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-900 truncate">{program.name}</p>
+                          <p className="text-sm text-gray-600 mt-1 truncate">{program.goal || '-'}</p>
+                        </div>
+                        <div className="flex justify-end gap-1 shrink-0">
+                          <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                localStorage.setItem('currentProgramId', program.id);
+                                navigate(`/programs/${program.id}/edit`);
+                              }}
+                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              aria-label="Edit program"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteId(program.id);
+                              }}
+                              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              aria-label="Delete program"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
+                        <span>{program.weeks} {program.weeks === 1 ? 'week' : 'weeks'}</span>
+                        <span>{program.sessionsPerWeek}x/week</span>
+                        <span>{program.schedule.length} scheduled</span>
+                      </div>
+                    </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full min-w-[760px]">
                   <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -140,7 +189,10 @@ export function ProgramsList() {
                       <tr
                           key={program.id}
                           className="hover:bg-gray-50 cursor-pointer"
-                          onClick={() => navigate(`/programs/${program.id}?mode=view`)}
+                          onClick={() => {
+                            localStorage.setItem('currentProgramId', program.id);
+                            navigate(`/programs/${program.id}?mode=view`);
+                          }}
                       >
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-900">{program.name}</div>
@@ -159,6 +211,7 @@ export function ProgramsList() {
                             <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  localStorage.setItem('currentProgramId', program.id);
                                   navigate(`/programs/${program.id}/edit`);
                                 }}
                                 className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

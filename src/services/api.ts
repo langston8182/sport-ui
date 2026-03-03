@@ -1,6 +1,14 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL;
 
+function buildLoginUrl(): string {
+  const callbackUrl = `${window.location.origin}/auth/callback`;
+  const url = new URL(`${AUTH_BASE_URL}/auth/login`);
+  url.searchParams.set('redirect_uri', callbackUrl);
+  url.searchParams.set('returnTo', callbackUrl);
+  return url.toString();
+}
+
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
@@ -28,7 +36,7 @@ async function fetchWithAuth<T>(url: string, options: RequestInit = {}): Promise
       });
     } else {
       // Refresh failed, redirect to login
-      window.location.href = `${AUTH_BASE_URL}/auth/login`;
+      window.location.href = buildLoginUrl();
       throw new Error('Authentication failed');
     }
   }

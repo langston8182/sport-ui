@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useSessionProgress } from '../hooks/useSessionProgress';
 import { useExerciseWeights } from '../hooks/useExerciseWeights';
@@ -7,6 +7,7 @@ import ExerciseDetailsModal from '../components/sessions/ExerciseDetailsModal';
 import { SetProgressIndicator } from '../components/ui/SetProgressIndicator';
 import { ProgressDot } from '../components/ui/ProgressDot';
 import { SetWeightInput } from '../components/sessions/SetWeightInput';
+import { useRestTimer } from '../contexts/RestTimerContext';
 
 
 
@@ -33,6 +34,7 @@ export default function SessionPlay() {
     // Hook pour gérer les poids d'exercices
     const {
         getWeightForSet,
+        getWeightsForExercise,
         addWeight,
         removeWeight,
         isLoading: weightsLoading
@@ -108,12 +110,15 @@ export default function SessionPlay() {
                 if (!wasCompleted && copy[setIndex]) {
                     const item = session.items[exerciseIndex];
                     const restTime = item.restSec || 0;
-                    const totalSets = copy.length;
-                    const completedSets = copy.filter(Boolean).length;
-                    
-                    // Démarrer le timer seulement si ce n'est pas la dernière série et qu'il y a un temps de repos
-                    if (completedSets < totalSets && restTime > 0) {
-                        startRestTimer(exerciseIndex, setIndex, restTime);
+
+                    // Démarrer le timer après chaque série validée, y compris la dernière
+                    if (restTime > 0) {
+                        const exerciseName = exercises[item.exerciseId]?.name || `Exercice #${exerciseIndex + 1}`;
+                        startRestTimer({
+                            exerciseName,
+                            setNumber: setIndex + 1,
+                            restTime,
+                        });
                     }
                 }
                 
@@ -134,15 +139,7 @@ export default function SessionPlay() {
     const [modalExercise, setModalExercise] = useState<Exercise | null>(null);
     const [modalItem, setModalItem] = useState<SessionItem | null>(null);
     
-    // Timer de repos
-    const [restTimer, setRestTimer] = useState<{
-        exerciseIndex: number;
-        setIndex: number;
-        timeLeft: number;
-        totalTime: number;
-        isActive: boolean;
-    } | null>(null);
-    const restTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const { startRestTimer } = useRestTimer();
 
     const openExerciseModal = (index: number) => {
         const item = session.items[index];
@@ -159,59 +156,6 @@ export default function SessionPlay() {
         setModalExercise(null);
     };
 
-    // Fonctions du timer de repos
-    const startRestTimer = (exerciseIndex: number, setIndex: number, restTime: number) => {
-        if (restTime > 0) {
-            setRestTimer({
-                exerciseIndex,
-                setIndex,
-                timeLeft: restTime,
-                totalTime: restTime,
-                isActive: true
-            });
-        }
-    };
-
-    const stopRestTimer = () => {
-        setRestTimer(null);
-        if (restTimerRef.current) {
-            clearTimeout(restTimerRef.current);
-            restTimerRef.current = null;
-        }
-    };
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
-    };
-
-    // Gestion du timer de repos
-    useEffect(() => {
-        if (restTimer && restTimer.isActive && restTimer.timeLeft > 0) {
-            restTimerRef.current = setTimeout(() => {
-                setRestTimer(prev => prev ? {
-                    ...prev,
-                    timeLeft: prev.timeLeft - 1
-                } : null);
-            }, 1000);
-        } else if (restTimer && restTimer.timeLeft === 0) {
-            // Timer terminé
-            console.log('Temps de repos terminé !');
-            setRestTimer(prev => prev ? { ...prev, isActive: false } : null);
-            if (restTimerRef.current) {
-                clearTimeout(restTimerRef.current);
-                restTimerRef.current = null;
-            }
-        }
-        
-        return () => {
-            if (restTimerRef.current) {
-                clearTimeout(restTimerRef.current);
-                restTimerRef.current = null;
-            }
-        };
-    }, [restTimer]);
 
     // Fonction pour mettre à jour les notes d'un exercice
 
@@ -324,23 +268,33 @@ export default function SessionPlay() {
                                                 : (done[index] ? 1 : 0);
                                             const currentSetNumber = Math.min(completedSets + 1, item.sets || 1);
                                             const existingWeight = getWeightForSet(item.exerciseId, currentSetNumber);
+                                            const bestWeight = getWeightsForExercise(item.exerciseId).reduce((max, weight) => {
+                                                return weight.weight > max ? weight.weight : max;
+                                            }, 0);
                                             
                                             return (
-                                                <div className="flex items-center space-x-2">
-                                                    <span className="text-xs sm:text-sm font-medium text-gray-700">
-                                                        {multipleSets ? `Série ${currentSetNumber}:` : 'Charge:'}
-                                                    </span>
-                                                    <SetWeightInput
-                                                        exerciseId={item.exerciseId}
-                                                        sessionId={session.id}
-                                                        setNumber={currentSetNumber}
-                                                        defaultReps={item.reps || 0}
-                                                        existingWeight={existingWeight}
-                                                        onWeightSaved={addWeight}
-                                                        onWeightDeleted={(weightId) => removeWeight(item.exerciseId, weightId)}
-                                                        disabled={weightsLoading}
-                                                        exerciseName={exercises[item.exerciseId]?.name || 'Exercice inconnu'}
-                                                    />
+                                                <div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-xs sm:text-sm font-medium text-gray-700">
+                                                            {multipleSets ? `Série ${currentSetNumber}:` : 'Charge:'}
+                                                        </span>
+                                                        <SetWeightInput
+                                                            exerciseId={item.exerciseId}
+                                                            sessionId={session.id}
+                                                            setNumber={currentSetNumber}
+                                                            defaultReps={item.reps || 0}
+                                                            existingWeight={existingWeight}
+                                                            onWeightSaved={addWeight}
+                                                            onWeightDeleted={(weightId) => removeWeight(item.exerciseId, weightId)}
+                                                            disabled={weightsLoading}
+                                                            exerciseName={exercises[item.exerciseId]?.name || 'Exercice inconnu'}
+                                                        />
+                                                    </div>
+                                                    {bestWeight > 0 && (
+                                                        <p className="mt-1 text-[11px] sm:text-xs text-gray-500">
+                                                            Meilleur: {bestWeight} kg
+                                                        </p>
+                                                    )}
                                                 </div>
                                             );
                                         })()}
@@ -388,93 +342,6 @@ export default function SessionPlay() {
                 />
             )}
 
-            {/* Timer de repos */}
-            {restTimer && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-xs sm:max-w-sm text-center">
-                        <div className="mb-3 sm:mb-4">
-                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Temps de repos</h3>
-                            <p className="text-gray-600 text-xs sm:text-sm break-words">
-                                {session.items[restTimer.exerciseIndex] && exercises[session.items[restTimer.exerciseIndex].exerciseId]?.name}
-                            </p>
-                            <p className="text-gray-500 text-xs">
-                                Série {restTimer.setIndex + 1} terminée
-                            </p>
-                        </div>
-                        
-                        <div className="mb-4 sm:mb-6">
-                            <div className="text-4xl sm:text-5xl lg:text-6xl font-mono font-bold text-blue-600 mb-3 sm:mb-4">
-                                {formatTime(restTimer.timeLeft)}
-                            </div>
-                            
-                            {/* Barre de progression circulaire */}
-                            <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 mx-auto mb-3 sm:mb-4">
-                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
-                                    <circle
-                                        cx="64"
-                                        cy="64"
-                                        r="56"
-                                        stroke="currentColor"
-                                        strokeWidth="8"
-                                        fill="none"
-                                        className="text-gray-200"
-                                    />
-                                    <circle
-                                        cx="64"
-                                        cy="64"
-                                        r="56"
-                                        stroke="currentColor"
-                                        strokeWidth="8"
-                                        fill="none"
-                                        strokeLinecap="round"
-                                        className={`transition-all duration-1000 ${
-                                            restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
-                                        }`}
-                                        strokeDasharray={`${2 * Math.PI * 56}`}
-                                        strokeDashoffset={`${2 * Math.PI * 56 * (restTimer.timeLeft / restTimer.totalTime)}`}
-                                    />
-                                </svg>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <span className={`text-lg sm:text-xl lg:text-2xl font-bold ${
-                                        restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
-                                    }`}>
-                                        {Math.round((1 - restTimer.timeLeft / restTimer.totalTime) * 100)}%
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                            <button
-                                onClick={stopRestTimer}
-                                className="flex-1 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base"
-                            >
-                                Ignorer
-                            </button>
-                            {restTimer.timeLeft === 0 && (
-                                <button
-                                    onClick={stopRestTimer}
-                                    className="flex-1 px-3 sm:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm sm:text-base"
-                                >
-                                    Continuer
-                                </button>
-                            )}
-                        </div>
-                        
-                        {restTimer.timeLeft <= 10 && restTimer.timeLeft > 0 && (
-                            <p className="text-red-500 text-xs sm:text-sm mt-2 sm:mt-3 font-medium animate-pulse">
-                                Préparez-vous !
-                            </p>
-                        )}
-                        
-                        {restTimer.timeLeft === 0 && (
-                            <p className="text-green-600 text-sm sm:text-base lg:text-lg mt-2 sm:mt-3 font-bold animate-bounce">
-                                🎉 Repos terminé !
-                            </p>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

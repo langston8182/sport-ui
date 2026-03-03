@@ -6,6 +6,7 @@ import { sessionsService } from '../services/sessions';
 import { programsService } from '../services/programs';
 import { weightsService } from '../services/weights';
 import { Loader } from '../components/ui/Loader';
+import { Program } from '../types';
 
 export function Dashboard() {
   const [counts, setCounts] = useState({
@@ -14,6 +15,7 @@ export function Dashboard() {
     programs: 0,
     weights: 0,
   });
+  const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,9 +34,19 @@ export function Dashboard() {
           programs: Array.isArray(programs) ? programs.length : 0,
           weights: Array.isArray(weights) ? weights.length : 0,
         });
+
+        const programList = Array.isArray(programs) ? programs : [];
+        const storedProgramId = localStorage.getItem('currentProgramId');
+        const resolvedCurrentProgram =
+          programList.find((program) => program.id === storedProgramId) ||
+          programList[0] ||
+          null;
+
+        setCurrentProgram(resolvedCurrentProgram);
       } catch (error) {
         console.error('Failed to fetch counts:', error);
         setCounts({ exercises: 0, sessions: 0, programs: 0, weights: 0 });
+        setCurrentProgram(null);
       } finally {
         setLoading(false);
       }
@@ -126,23 +138,32 @@ export function Dashboard() {
           <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
         </div>
         
-        <div className="grid grid-cols-3 gap-1.5 md:gap-4 lg:gap-6">
-          {cards.filter(card => card.title !== 'Suivi de poids').map(({ title, createTo }) => (
+        <div className="grid grid-cols-1 gap-1.5 md:gap-4 lg:gap-6">
+          {currentProgram && (
             <Link
-              key={createTo}
-              to={createTo}
+              to={`/programs/${currentProgram.id}?mode=view`}
+              onClick={() => localStorage.setItem('currentProgramId', currentProgram.id)}
               className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-4 lg:p-6 border border-dashed border-pastel-neutral-300/50 rounded-md md:rounded-xl lg:rounded-2xl hover:border-pastel-blue-400 hover:bg-gradient-to-br hover:from-pastel-blue-50 hover:to-pastel-purple-50/50 transition-all duration-300 group"
             >
               <div className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-sm md:rounded-lg lg:rounded-xl bg-pastel-neutral-100 group-hover:bg-pastel-blue-100 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
-                <Plus className="w-3 h-3 md:w-5 md:h-5 lg:w-6 lg:h-6 text-pastel-neutral-400 group-hover:text-pastel-blue-600" />
+                <CalendarDays className="w-3 h-3 md:w-5 md:h-5 lg:w-6 lg:h-6 text-pastel-neutral-400 group-hover:text-pastel-blue-600" />
               </div>
               <div className="text-center">
                 <span className="text-pastel-neutral-700 group-hover:text-pastel-blue-700 font-medium block text-xs md:text-sm lg:text-base leading-tight">
-                  {title.slice(0, -1)}
+                  Programme en cours
+                </span>
+                <span className="text-pastel-neutral-500 block text-[10px] md:text-xs mt-0.5 truncate max-w-[90px] md:max-w-[140px] lg:max-w-[180px]">
+                  {currentProgram.name}
                 </span>
               </div>
             </Link>
-          ))}
+          )}
+
+          {!currentProgram && (
+            <div className="p-3 md:p-4 text-center text-pastel-neutral-500 text-xs md:text-sm border border-dashed border-pastel-neutral-300/50 rounded-md md:rounded-xl lg:rounded-2xl">
+              Aucun programme en cours
+            </div>
+          )}
         </div>
       </div>
 

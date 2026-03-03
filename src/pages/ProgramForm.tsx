@@ -63,6 +63,7 @@ export function ProgramForm() {
 
     try {
       const data = await programsService.getById(id);
+      localStorage.setItem('currentProgramId', data.id);
       setName(data.name);
       setGoal(data.goal || '');
       setWeeks(data.weeks);

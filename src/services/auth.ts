@@ -2,6 +2,14 @@ import { AuthResponse, UserProfile } from '../types/auth';
 
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL;
 
+function buildAuthUrl(path: string): string {
+  const callbackUrl = `${window.location.origin}/auth/callback`;
+  const url = new URL(`${AUTH_BASE_URL}${path}`);
+  url.searchParams.set('redirect_uri', callbackUrl);
+  url.searchParams.set('returnTo', callbackUrl);
+  return url.toString();
+}
+
 class AuthService {
   async checkAuth(): Promise<AuthResponse> {
     try {
@@ -36,11 +44,11 @@ class AuthService {
   }
 
   redirectToLogin(): void {
-    window.location.href = `${AUTH_BASE_URL}/auth/login`;
+    window.location.href = buildAuthUrl('/auth/login');
   }
 
   redirectToLogout(): void {
-    window.location.href = `${AUTH_BASE_URL}/auth/logout`;
+    window.location.href = buildAuthUrl('/auth/logout');
   }
 
   async handleCallback(): Promise<AuthResponse> {

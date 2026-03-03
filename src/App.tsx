@@ -15,39 +15,42 @@ import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
 import WeightTracker from './pages/WeightTracker';
 import ExerciseProgressionPage from './pages/ExerciseProgressionPage';
+import { RestTimerProvider } from './contexts/RestTimerContext';
 function App() {
   return (
       <BrowserRouter>
         <AuthProvider>
           <ToastProvider>
-            <Routes>
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/*" element={
-                <Layout>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/exercises" element={<ExercisesList />} />
-                    <Route path="/exercises/new" element={<ExerciseForm />} />
-                    <Route path="/exercises/:id" element={<ExerciseForm />} />
-                    <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
-                    <Route path="/sessions" element={<SessionsList />} />
-                    <Route path="/sessions/new" element={<SessionForm />} />
-                    <Route path="/sessions/:id" element={<SessionForm />} />
-                    <Route path="/sessions/:id/edit" element={<SessionForm />} />
-                    <Route path="/sessions/:id/play" element={<SessionPlay />} />
-                    <Route path="/programs" element={<ProgramsList />} />
-                    <Route path="/programs/new" element={<ProgramForm />} />
-                    <Route path="/programs/:id" element={<ProgramForm />} />
-                    <Route path="/programs/:id/edit" element={<ProgramForm />} />
-                    <Route path="/timer/tabata" element={<TabataTimer />} />
-                    <Route path="/timer" element={<Timer />} />
-                    <Route path="/weight" element={<WeightTracker />} />
-                    <Route path="/progression" element={<ExerciseProgressionPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Layout>
-              } />
-            </Routes>
+            <RestTimerProvider>
+              <Routes>
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/*" element={
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/exercises" element={<ExercisesList />} />
+                      <Route path="/exercises/new" element={<ExerciseForm />} />
+                      <Route path="/exercises/:id" element={<ExerciseForm />} />
+                      <Route path="/exercises/:id/edit" element={<ExerciseForm />} />
+                      <Route path="/sessions" element={<SessionsList />} />
+                      <Route path="/sessions/new" element={<SessionForm />} />
+                      <Route path="/sessions/:id" element={<SessionForm />} />
+                      <Route path="/sessions/:id/edit" element={<SessionForm />} />
+                      <Route path="/sessions/:id/play" element={<SessionPlay />} />
+                      <Route path="/programs" element={<ProgramsList />} />
+                      <Route path="/programs/new" element={<ProgramForm />} />
+                      <Route path="/programs/:id" element={<ProgramForm />} />
+                      <Route path="/programs/:id/edit" element={<ProgramForm />} />
+                      <Route path="/timer/tabata" element={<TabataTimer />} />
+                      <Route path="/timer" element={<Timer />} />
+                      <Route path="/weight" element={<WeightTracker />} />
+                      <Route path="/progression" element={<ExerciseProgressionPage />} />
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Layout>
+                } />
+              </Routes>
+            </RestTimerProvider>
           </ToastProvider>
         </AuthProvider>
       </BrowserRouter>
