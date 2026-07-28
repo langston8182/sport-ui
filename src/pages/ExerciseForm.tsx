@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Info, Upload, CreditCard as Edit } from 'lucide-react';
 import { exercisesService } from '../services/exercises';
@@ -27,12 +27,76 @@ export function ExerciseForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const previousPreviewUrlRef = useRef<string | null>(null);
+  const previewRequestIdRef = useRef(0);
+
+  const cleanupPreviewUrl = (url: string | null) => {
+    if (url && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const updatePreviewUrl = (nextUrl: string) => {
+    cleanupPreviewUrl(previousPreviewUrlRef.current);
+    previousPreviewUrlRef.current = nextUrl;
+    setImagePreviewUrl(nextUrl);
+  };
+
+  const createFastPreviewUrl = async (file: File): Promise<string> => {
+    const sourceObjectUrl = URL.createObjectURL(file);
+
+    try {
+      const img = new Image();
+      img.src = sourceObjectUrl;
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to decode image'));
+      });
+
+      const maxPreviewSize = 800;
+      const scale = Math.min(maxPreviewSize / img.naturalWidth, maxPreviewSize / img.naturalHeight, 1);
+      const width = Math.max(1, Math.round(img.naturalWidth * scale));
+      const height = Math.max(1, Math.round(img.naturalHeight * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        return sourceObjectUrl;
+      }
+
+      context.drawImage(img, 0, 0, width, height);
+
+      const previewBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+            return;
+          }
+          reject(new Error('Failed to create preview blob'));
+        }, 'image/jpeg', 0.82);
+      });
+
+      return URL.createObjectURL(previewBlob);
+    } finally {
+      URL.revokeObjectURL(sourceObjectUrl);
+    }
+  };
 
   useEffect(() => {
     if (id) {
       fetchExercise();
     }
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      cleanupPreviewUrl(previousPreviewUrlRef.current);
+    };
+  }, []);
 
   const fetchExercise = async () => {
     if (!id) return;
@@ -62,10 +126,30 @@ export function ExerciseForm() {
       return;
     }
 
+    const requestId = ++previewRequestIdRef.current;
     setSelectedFile(file);
-    setImagePreviewUrl(URL.createObjectURL(file));
     setPreviewLoading(true);
     setErrors({ ...errors, image: '' });
+
+    void createFastPreviewUrl(file)
+      .then((previewUrl) => {
+        if (requestId !== previewRequestIdRef.current) {
+          cleanupPreviewUrl(previewUrl);
+          return;
+        }
+        updatePreviewUrl(previewUrl);
+      })
+      .catch(() => {
+        if (requestId !== previewRequestIdRef.current) {
+          return;
+        }
+        updatePreviewUrl(URL.createObjectURL(file));
+      })
+      .finally(() => {
+        if (requestId === previewRequestIdRef.current) {
+          setPreviewLoading(false);
+        }
+      });
   };
 
   const validate = () => {
@@ -299,36 +383,41 @@ export function ExerciseForm() {
                     Image <span className="text-red-500">*</span>
                   </label>
 
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col sm:flex-row items-start gap-4">
                     {imagePreviewUrl && (
-                        <div className="relative w-32 h-32">
-                          {previewLoading && (
-                              <div className="absolute inset-0 rounded-lg bg-white/80 backdrop-blur-sm flex items-center justify-center">
-                                <div className="w-5 h-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
-                              </div>
+                        <div className="w-32 flex-shrink-0">
+                          <div className="relative w-32 h-32">
+                            {previewLoading && (
+                                <div className="absolute inset-0 rounded-lg bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                                  <div className="w-5 h-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
+                                </div>
+                            )}
+                            <img
+                                src={imagePreviewUrl}
+                                alt="Preview"
+                                className={`w-32 h-32 object-cover rounded-lg transition-opacity ${previewLoading ? 'opacity-40' : 'opacity-100'}`}
+                                onLoad={() => setPreviewLoading(false)}
+                                onError={(e) => {
+                                  setPreviewLoading(false);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                          </div>
+                          {selectedFile && (
+                              <p className="mt-2 text-xs text-gray-500 truncate" title={selectedFile.name}>
+                                {selectedFile.name}
+                              </p>
                           )}
-                          <img
-                              src={imagePreviewUrl}
-                              alt="Preview"
-                              className={`w-32 h-32 object-cover rounded-lg transition-opacity ${previewLoading ? 'opacity-40' : 'opacity-100'}`}
-                              onLoad={() => setPreviewLoading(false)}
-                              onError={(e) => {
-                                setPreviewLoading(false);
-                                e.currentTarget.style.display = 'none';
-                              }}
-                          />
                         </div>
                     )}
 
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0 w-full">
                       <label
                           htmlFor="image"
-                          className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+                          className="flex items-center justify-center gap-2 px-4 py-3 w-full border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
                       >
                         <Upload className="w-5 h-5 text-gray-400" />
-                        <span className="text-sm text-gray-600">
-                    {selectedFile ? selectedFile.name : 'Choose an image file'}
-                  </span>
+                        <span className="text-sm text-gray-600">Choisir une image</span>
                       </label>
                       <input
                           id="image"

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ImageModalProps {
@@ -30,9 +31,10 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageSrcSet, alt }: Imag
 
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75"
+            style={{ zIndex: 2147483647 }}
             onClick={onClose}
         >
             <button
@@ -55,6 +57,7 @@ export function ImageModal({ isOpen, onClose, imageUrl, imageSrcSet, alt }: Imag
                     className="max-w-full max-h-[90vh] object-contain rounded-lg"
                 />
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
