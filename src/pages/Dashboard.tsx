@@ -19,6 +19,11 @@ const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
 const CURRENT_AWAY_PROGRAM_ID_KEY = 'currentAwayProgramId';
 const LOCATION_CONTEXT_KEY = 'dashboardLocationContext';
 
+type DetectResult = {
+  value: boolean | null;
+  error: string | null;
+};
+
 function readStoredLocationContext(): boolean | null {
   const raw = localStorage.getItem(LOCATION_CONTEXT_KEY);
   if (raw === 'home') return true;
@@ -94,9 +99,26 @@ function resolveCurrentProgram(programs: Program[], isAtHome: boolean | null): P
   );
 }
 
-async function detectAtHome(): Promise<boolean | null> {
-  if (!hasHomeCoordinates() || !navigator.geolocation) {
-    return null;
+async function detectAtHome(): Promise<DetectResult> {
+  if (!window.isSecureContext) {
+    return {
+      value: null,
+      error: 'Geolocalisation bloquee: page non securisee (HTTPS requis, sauf localhost).',
+    };
+  }
+
+  if (!hasHomeCoordinates()) {
+    return {
+      value: null,
+      error: 'Coordonnees domicile manquantes dans le fichier .env.local.',
+    };
+  }
+
+  if (!navigator.geolocation) {
+    return {
+      value: null,
+      error: 'Geolocalisation indisponible dans ce navigateur/conteneur.',
+    };
   }
 
   try {
@@ -116,9 +138,26 @@ async function detectAtHome(): Promise<boolean | null> {
       HOME_LONGITUDE
     );
 
-    return distanceMeters <= HOME_RADIUS_METERS;
+    return {
+      value: distanceMeters <= HOME_RADIUS_METERS,
+      error: null,
+    };
   } catch (error) {
-    return null;
+    const geoError = error as GeolocationPositionError;
+
+    if (geoError?.code === 1) {
+      return { value: null, error: 'Permission de geolocalisation refusee par le navigateur.' };
+    }
+
+    if (geoError?.code === 2) {
+      return { value: null, error: 'Position indisponible (GPS/reseau).'};
+    }
+
+    if (geoError?.code === 3) {
+      return { value: null, error: 'Detection de position trop longue (timeout).'};
+    }
+
+    return { value: null, error: 'Echec de geolocalisation (erreur inconnue).'};
   }
 }
 
@@ -132,6 +171,7 @@ export function Dashboard() {
   const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
   const [isAtHome, setIsAtHome] = useState<boolean | null>(() => readStoredLocationContext());
   const [detectingLocation, setDetectingLocation] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const locationContext = (() => {
@@ -206,9 +246,12 @@ export function Dashboard() {
 
   const handleDetectLocation = async () => {
     setDetectingLocation(true);
-    const detected = await detectAtHome();
-    setIsAtHome(detected);
-    storeLocationContext(detected);
+    setLocationError(null);
+
+    const result = await detectAtHome();
+    setIsAtHome(result.value);
+    storeLocationContext(result.value);
+    setLocationError(result.error);
     setDetectingLocation(false);
   };
 
@@ -334,6 +377,11 @@ export function Dashboard() {
                 Je suis a l'exterieur
               </button>
             </div>
+            {locationError && (
+              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-fit">
+                {locationError}
+              </p>
+            )}
           </div>
         </div>
         
