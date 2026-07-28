@@ -5,7 +5,7 @@ import { exercisesService } from '../services/exercises';
 import { ExerciseMode } from '../types';
 import { Loader } from '../components/ui/Loader';
 import { useToast } from '../components/ui/Toast';
-import { uploadImage, getImageUrl, getResponsiveImageUrl } from '../services/imageUpload';
+import { uploadImage, getResponsiveImageUrl } from '../services/imageUpload';
 
 export function ExerciseForm() {
   const { id } = useParams();
@@ -25,6 +25,7 @@ export function ExerciseForm() {
   const [imageKeyOriginal, setImageKeyOriginal] = useState('');
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function ExerciseForm() {
       setNotes(data.notes || '');
       setImageKeyOriginal(data.imageKeyOriginal);
       setImagePreviewUrl(getResponsiveImageUrl(data.imageKeyOriginal));
+      setPreviewLoading(true);
     } catch (error) {
       showToast('Failed to load exercise', 'error');
       navigate('/exercises');
@@ -62,6 +64,7 @@ export function ExerciseForm() {
 
     setSelectedFile(file);
     setImagePreviewUrl(URL.createObjectURL(file));
+    setPreviewLoading(true);
     setErrors({ ...errors, image: '' });
   };
 
@@ -113,11 +116,12 @@ export function ExerciseForm() {
       if (isEdit && id) {
         await exercisesService.update(id, payload);
         showToast('Exercise updated successfully', 'success');
+        navigate('/exercises');
       } else {
-        await exercisesService.create(payload);
+        const createdExercise = await exercisesService.create(payload);
         showToast('Exercise created successfully', 'success');
+        navigate('/exercises', { state: { createdExercise } });
       }
-      navigate('/exercises');
     } catch (error) {
       showToast(
           isEdit ? 'Failed to update exercise' : 'Failed to create exercise',
@@ -182,14 +186,26 @@ export function ExerciseForm() {
                 {imagePreviewUrl && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
-                      <img
-                          src={imagePreviewUrl}
-                          alt={name}
-                          className="w-64 h-64 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                      />
+                      <div className="relative w-64 h-64">
+                        {previewLoading && (
+                            <div className="absolute inset-0 rounded-lg bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <div className="w-4 h-4 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
+                                <span>Chargement de l'image...</span>
+                              </div>
+                            </div>
+                        )}
+                        <img
+                            src={imagePreviewUrl}
+                            alt={name}
+                            className={`w-64 h-64 object-cover rounded-lg transition-opacity ${previewLoading ? 'opacity-40' : 'opacity-100'}`}
+                            onLoad={() => setPreviewLoading(false)}
+                            onError={(e) => {
+                              setPreviewLoading(false);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                        />
+                      </div>
                     </div>
                 )}
 
@@ -233,15 +249,32 @@ export function ExerciseForm() {
                   <label htmlFor="mode" className="block text-sm font-medium text-gray-700 mb-2">
                     Mode <span className="text-red-500">*</span>
                   </label>
-                  <select
-                      id="mode"
-                      value={mode}
-                      onChange={(e) => setMode(e.target.value as ExerciseMode)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-                  >
-                    <option value="reps">Reps</option>
-                    <option value="time">Time</option>
-                  </select>
+                  <div className="inline-flex w-full sm:w-auto rounded-xl border border-gray-200 bg-white p-1 shadow-soft">
+                    <button
+                        type="button"
+                        onClick={() => setMode('reps')}
+                        className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                            mode === 'reps'
+                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                        aria-pressed={mode === 'reps'}
+                    >
+                      Repetitions
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setMode('time')}
+                        className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                            mode === 'time'
+                                ? 'bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        }`}
+                        aria-pressed={mode === 'time'}
+                    >
+                      Temps
+                    </button>
+                  </div>
 
                   <div className="mt-2 p-3 bg-blue-50 rounded-lg flex gap-2">
                     <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -268,14 +301,23 @@ export function ExerciseForm() {
 
                   <div className="flex items-start gap-4">
                     {imagePreviewUrl && (
-                        <img
-                            src={imagePreviewUrl}
-                            alt="Preview"
-                            className="w-32 h-32 object-cover rounded-lg"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                        />
+                        <div className="relative w-32 h-32">
+                          {previewLoading && (
+                              <div className="absolute inset-0 rounded-lg bg-white/80 backdrop-blur-sm flex items-center justify-center">
+                                <div className="w-5 h-5 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
+                              </div>
+                          )}
+                          <img
+                              src={imagePreviewUrl}
+                              alt="Preview"
+                              className={`w-32 h-32 object-cover rounded-lg transition-opacity ${previewLoading ? 'opacity-40' : 'opacity-100'}`}
+                              onLoad={() => setPreviewLoading(false)}
+                              onError={(e) => {
+                                setPreviewLoading(false);
+                                e.currentTarget.style.display = 'none';
+                              }}
+                          />
+                        </div>
                     )}
 
                     <div className="flex-1">
@@ -296,6 +338,12 @@ export function ExerciseForm() {
                           className="hidden"
                       />
                       {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
+                      {uploading && (
+                          <p className="mt-2 text-sm text-blue-600 flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full border-2 border-blue-200 border-t-blue-600 animate-spin" />
+                            Upload de l'image en cours...
+                          </p>
+                      )}
                     </div>
                   </div>
                 </div>

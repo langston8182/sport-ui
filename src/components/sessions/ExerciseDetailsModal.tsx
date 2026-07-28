@@ -27,7 +27,7 @@ export function ExerciseDetailsModal({
     const isReps = exercise.mode === 'reps';
     const sets = sessionItem.sets || 1;
     const reps = sessionItem.reps || 10;
-    const duration = sessionItem.durationSec || 30;
+    const duration = sessionItem.durationSec || 90;
     const rest = sessionItem.restSec || 0;
 
     return (

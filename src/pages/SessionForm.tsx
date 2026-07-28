@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, ChevronUp, ChevronDown, CreditCard as Edit, GripVertical, Play } from 'lucide-react';
 import { sessionsService } from '../services/sessions';
 import { exercisesService } from '../services/exercises';
@@ -12,11 +12,15 @@ import { getResponsiveImageUrl, getResponsiveImageSrcSet } from '../services/ima
 export function SessionForm() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const viewMode = searchParams.get('mode') || 'edit';
   const isView = viewMode === 'view';
   const isEdit = Boolean(id) && !isView;
+  const state = location.state as { fromProgram?: boolean; returnTo?: string } | null;
+  const backTarget = state?.fromProgram && state.returnTo ? state.returnTo : '/sessions';
+  const backLabel = state?.fromProgram ? 'Back to Program' : 'Back to Sessions';
 
   const [loading, setLoading] = useState(Boolean(id));
   const [submitting, setSubmitting] = useState(false);
@@ -59,7 +63,7 @@ export function SessionForm() {
       setItems(data.items);
     } catch (error) {
       showToast('Failed to load session', 'error');
-      navigate('/sessions');
+      navigate(backTarget);
     } finally {
       setLoading(false);
     }
@@ -72,7 +76,7 @@ export function SessionForm() {
       restSec: 60,
       ...(exercise.mode === 'reps'
           ? { sets: 3, reps: 10 }
-          : { durationSec: 30 }),
+          : { durationSec: 90 }),
     };
     setItems([...items, newItem]);
   };
@@ -171,7 +175,7 @@ export function SessionForm() {
         await sessionsService.create(payload);
         showToast('Session created successfully', 'success');
       }
-      navigate('/sessions');
+      navigate(backTarget);
     } catch (error) {
       showToast(
           isEdit ? 'Failed to update session' : 'Failed to create session',
@@ -189,11 +193,11 @@ export function SessionForm() {
   return (
       <div>
         <button
-            onClick={() => navigate('/sessions')}
+            onClick={() => navigate(backTarget)}
             className="btn-outline flex items-center gap-2 mb-6 w-full sm:w-auto justify-center sm:justify-start"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Sessions</span>
+          <span>{backLabel}</span>
         </button>
 
         <div className="card-pastel p-4 sm:p-6 w-full max-w-7xl mx-auto">
@@ -219,7 +223,7 @@ export function SessionForm() {
                   </button>
                   {/* Edit button remains unchanged */}
                   <button
-                      onClick={() => navigate(`/sessions/${id}/edit`)}
+                      onClick={() => navigate(`/sessions/${id}/edit`, { state: state ?? undefined })}
                       className="btn-primary flex items-center justify-center gap-2"
                   >
                     <Edit className="w-4 h-4" />
@@ -282,7 +286,7 @@ export function SessionForm() {
                                         <div className="grid grid-cols-2 gap-3">
                                           <div>
                                             <label className="block text-xs text-gray-600 mb-1">Duration (sec)</label>
-                                            <p className="text-gray-900 font-semibold">{item.durationSec || 30}</p>
+                                            <p className="text-gray-900 font-semibold">{item.durationSec || 90}</p>
                                           </div>
                                           <div>
                                             <label className="block text-xs text-gray-600 mb-1">Rest (sec)</label>
@@ -309,10 +313,10 @@ export function SessionForm() {
                 <div className="pt-4">
                   <button
                       type="button"
-                      onClick={() => navigate('/sessions')}
+                      onClick={() => navigate(backTarget)}
                       className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    Back to Sessions
+                    {backLabel}
                   </button>
                 </div>
               </div>
@@ -421,11 +425,14 @@ export function SessionForm() {
                                             <input
                                                 type="number"
                                                 min="1"
-                                                value={item.sets || 3}
+                                                value={item.sets ?? ''}
                                                 onChange={(e) =>
-                                                    handleUpdateItem(index, { sets: Number(e.target.value) })
+                                                    handleUpdateItem(index, {
+                                                      sets: e.target.value === '' ? undefined : Number(e.target.value),
+                                                    })
                                                 }
                                                 className="input-pastel w-full text-sm"
+                                                placeholder="3"
                                             />
                                           </div>
                                           <div>
@@ -433,11 +440,14 @@ export function SessionForm() {
                                             <input
                                                 type="number"
                                                 min="1"
-                                                value={item.reps || 10}
+                                                value={item.reps ?? ''}
                                                 onChange={(e) =>
-                                                    handleUpdateItem(index, { reps: Number(e.target.value) })
+                                                    handleUpdateItem(index, {
+                                                      reps: e.target.value === '' ? undefined : Number(e.target.value),
+                                                    })
                                                 }
                                                 className="input-pastel w-full text-sm"
+                                                placeholder="10"
                                             />
                                           </div>
                                           <div>
@@ -462,11 +472,14 @@ export function SessionForm() {
                                             <input
                                                 type="number"
                                                 min="1"
-                                                value={item.durationSec || 30}
+                                                value={item.durationSec ?? ''}
                                                 onChange={(e) =>
-                                                    handleUpdateItem(index, { durationSec: Number(e.target.value) })
+                                                    handleUpdateItem(index, {
+                                                      durationSec: e.target.value === '' ? undefined : Number(e.target.value),
+                                                    })
                                                 }
                                                 className="input-pastel w-full text-sm"
+                                                placeholder="90"
                                             />
                                           </div>
                                           <div>
@@ -537,7 +550,7 @@ export function SessionForm() {
                 <div className="flex flex-col sm:flex-row gap-3 pt-6">
                   <button
                       type="button"
-                      onClick={() => navigate('/sessions')}
+                      onClick={() => navigate(backTarget)}
                       className="btn-secondary order-2 sm:order-1"
                       disabled={submitting}
                   >

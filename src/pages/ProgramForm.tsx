@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, X, CreditCard as Edit } from 'lucide-react';
 import { programsService } from '../services/programs';
 import { sessionsService } from '../services/sessions';
-import { Program, Session, ScheduleEntry } from '../types';
+import { Session, ScheduleEntry } from '../types';
 import { Loader } from '../components/ui/Loader';
 import { useToast } from '../components/ui/Toast';
 import { SessionPicker } from '../components/programs/SessionPicker';
@@ -13,6 +12,7 @@ import { SessionPicker } from '../components/programs/SessionPicker';
 export function ProgramForm() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const viewMode = searchParams.get('mode') || 'edit';
@@ -27,7 +27,7 @@ export function ProgramForm() {
   const [sessionsPerWeek, setSessionsPerWeek] = useState(3);
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [sessions, setSessions] = useState<Record<string, Session>>({});
-  const [renderKey, setRenderKey] = useState(0);
+  const [renderKey] = useState(0);
   
   // Debug logging
   console.log('Current sessions state:', sessions);
@@ -91,7 +91,12 @@ export function ProgramForm() {
    * redirect to the session's page with ?mode=view.
    */
   const handleViewSession = (sessionId: string) => {
-    navigate(`/sessions/${sessionId}?mode=view`);
+    navigate(`/sessions/${sessionId}?mode=view`, {
+      state: {
+        fromProgram: true,
+        returnTo: `${location.pathname}${location.search}`,
+      },
+    });
   };
 
   const handleSelectSession = async (session: Session) => {

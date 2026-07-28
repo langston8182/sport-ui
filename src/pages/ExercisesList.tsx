@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus, CreditCard as Edit, Trash2, Search, Dumbbell } from 'lucide-react';
 import { exercisesService } from '../services/exercises';
 import { Exercise, ExerciseMode } from '../types';
@@ -20,12 +20,39 @@ export function ExercisesList() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ url: string; srcSet: string; alt: string } | null>(null);
+  const location = useLocation();
   const navigate = useNavigate();
   const { showToast } = useToast();
+
+  const mergeExercises = (serverExercises: Exercise[], localExercises: Exercise[]) => {
+    const byId = new Map<string, Exercise>();
+    serverExercises.forEach((exercise) => byId.set(exercise.id, exercise));
+    localExercises.forEach((exercise) => {
+      if (!byId.has(exercise.id)) {
+        byId.set(exercise.id, exercise);
+      }
+    });
+    return Array.from(byId.values());
+  };
 
   useEffect(() => {
     fetchExercises();
   }, []);
+
+  useEffect(() => {
+    const state = location.state as { createdExercise?: Exercise } | null;
+    const createdExercise = state?.createdExercise;
+    if (!createdExercise) return;
+
+    setExercises((prev) => {
+      if (prev.some((exercise) => exercise.id === createdExercise.id)) {
+        return prev;
+      }
+      return [createdExercise, ...prev];
+    });
+
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     let filtered = exercises;
@@ -47,7 +74,8 @@ export function ExercisesList() {
   const fetchExercises = async () => {
     try {
       const data = await exercisesService.getAll();
-      setExercises(Array.isArray(data) ? data : []);
+      const dataArray = Array.isArray(data) ? data : [];
+      setExercises((prev) => mergeExercises(dataArray, prev));
     } catch (error) {
       showToast('Failed to load exercises', 'error');
       setExercises([]);
@@ -91,7 +119,7 @@ export function ExercisesList() {
         </div>
 
         <div className="card-gradient rounded-2xl mb-6 p-6">
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -99,18 +127,32 @@ export function ExercisesList() {
                   placeholder="Rechercher des exercices..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="input-modern w-full pl-10"
+                  className="input-pastel w-full pl-10"
               />
             </div>
-            <select
-                value={modeFilter}
-                onChange={(e) => setModeFilter(e.target.value as ExerciseMode | 'all')}
-                className="input-modern"
-            >
-              <option value="all">Tous les modes</option>
-              <option value="reps">Répétitions</option>
-              <option value="time">Temps</option>
-            </select>
+            <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1 shadow-soft">
+              {([
+                { value: 'all', label: 'Tous les modes' },
+                { value: 'reps', label: 'Répétitions' },
+                { value: 'time', label: 'Temps' },
+              ] as const).map((option) => {
+                const isActive = modeFilter === option.value;
+                return (
+                  <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setModeFilter(option.value)}
+                      className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
+                          isActive
+                              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

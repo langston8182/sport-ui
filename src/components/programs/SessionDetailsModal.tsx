@@ -68,7 +68,7 @@ export function SessionDetailsModal({
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
                                                         <label className="block text-xs text-gray-600 mb-1">Duration (sec)</label>
-                                                        <p className="text-gray-900 font-semibold">{item.durationSec || 30}</p>
+                                                        <p className="text-gray-900 font-semibold">{item.durationSec || 90}</p>
                                                     </div>
                                                     <div>
                                                         <label className="block text-xs text-gray-600 mb-1">Rest (sec)</label>
