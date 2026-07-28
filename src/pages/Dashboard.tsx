@@ -212,6 +212,11 @@ export function Dashboard() {
     setDetectingLocation(false);
   };
 
+  const setManualLocationContext = (value: boolean) => {
+    setIsAtHome(value);
+    storeLocationContext(value);
+  };
+
   if (loading) {
     return <Loader />;
   }
@@ -305,6 +310,28 @@ export function Dashboard() {
                 className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualLocationContext(true)}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
+                  isAtHome === true
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-emerald-50 hover:border-emerald-300'
+                }`}
+              >
+                Je suis a la maison
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualLocationContext(false)}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
+                  isAtHome === false
+                    ? 'bg-blue-100 text-blue-800 border-blue-300'
+                    : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-blue-50 hover:border-blue-300'
+                }`}
+              >
+                Je suis a l'exterieur
               </button>
             </div>
           </div>
