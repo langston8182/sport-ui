@@ -1,5 +1,9 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL;
+const API_BASE_URL = import.meta.env.DEV
+  ? '/api-proxy'
+  : import.meta.env.VITE_API_URL;
+const AUTH_BASE_URL = import.meta.env.DEV
+  ? '/auth-proxy'
+  : import.meta.env.VITE_AUTH_BASE_URL;
 
 function buildLoginUrl(): string {
   const callbackUrl = `${window.location.origin}/auth/callback`;

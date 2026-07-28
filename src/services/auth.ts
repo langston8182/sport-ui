@@ -1,6 +1,8 @@
 import { AuthResponse, UserProfile } from '../types/auth';
 
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL;
+const AUTH_BASE_URL = import.meta.env.DEV
+  ? '/auth-proxy'
+  : import.meta.env.VITE_AUTH_BASE_URL;
 
 function buildAuthUrl(path: string): string {
   const callbackUrl = `${window.location.origin}/auth/callback`;

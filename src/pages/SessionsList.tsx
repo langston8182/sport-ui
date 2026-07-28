@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, CreditCard as Edit, Trash2, Search, Play, ListChecks } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Search, Play, ListChecks, Copy } from 'lucide-react';
 import { sessionsService } from '../services/sessions';
 import { exercisesService } from '../services/exercises';
 import { Session, Exercise } from '../types';
@@ -16,6 +16,7 @@ export function SessionsList() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   // Store all exercises in a map so we can pass them to the play page without
   // further backend calls. If exercises fail to load, the map remains empty.
   const [exercises, setExercises] = useState<Record<string, Exercise>>({});
@@ -82,6 +83,28 @@ export function SessionsList() {
       showToast('Failed to delete session', 'error');
     } finally {
       setDeleteId(null);
+    }
+  };
+
+  const handleDuplicate = async (session: Session) => {
+    setDuplicatingId(session.id);
+    try {
+      const duplicatedItems = session.items.map((item, index) => ({
+        ...item,
+        order: index,
+      }));
+
+      const duplicatedSession = await sessionsService.create({
+        name: `${session.name} (copy)`,
+        items: duplicatedItems,
+      });
+
+      setSessions((prev) => [duplicatedSession, ...prev]);
+      showToast('Session duplicated successfully', 'success');
+    } catch (error) {
+      showToast('Failed to duplicate session', 'error');
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -210,6 +233,17 @@ export function SessionsList() {
                                 aria-label="Edit session"
                             >
                               <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleDuplicate(session);
+                                }}
+                                disabled={duplicatingId === session.id}
+                                className="p-2 text-gray-600 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Duplicate session"
+                            >
+                              <Copy className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={(e) => {
