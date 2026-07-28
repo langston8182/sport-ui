@@ -9,6 +9,25 @@ import { useToast } from '../components/ui/Toast';
 import { SessionPicker } from '../components/programs/SessionPicker';
 // SessionDetailsModal removed: navigation instead of modal
 
+const env = import.meta.env as Record<string, string | undefined>;
+const HOME_PREFIX = (env.VITE_HOME_PROGRAM_PREFIX || 'Maison').trim().toLowerCase();
+
+const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
+const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
+const CURRENT_AWAY_PROGRAM_ID_KEY = 'currentAwayProgramId';
+const LOCATION_CONTEXT_KEY = 'dashboardLocationContext';
+
+function isHomeProgramName(name: string): boolean {
+  return name.trim().toLowerCase().startsWith(HOME_PREFIX);
+}
+
+function readStoredLocationContext(): boolean | null {
+  const raw = localStorage.getItem(LOCATION_CONTEXT_KEY);
+  if (raw === 'home') return true;
+  if (raw === 'away') return false;
+  return null;
+}
+
 export function ProgramForm() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -63,7 +82,21 @@ export function ProgramForm() {
 
     try {
       const data = await programsService.getById(id);
-      localStorage.setItem('currentProgramId', data.id);
+      localStorage.setItem(CURRENT_PROGRAM_ID_KEY, data.id);
+
+      const atHome = readStoredLocationContext();
+      const isHomeProgram = isHomeProgramName(data.name);
+
+      // Only update the context-specific key when the viewed program matches
+      // the current location context.
+      if (atHome === true && isHomeProgram) {
+        localStorage.setItem(CURRENT_HOME_PROGRAM_ID_KEY, data.id);
+      }
+
+      if (atHome === false && !isHomeProgram) {
+        localStorage.setItem(CURRENT_AWAY_PROGRAM_ID_KEY, data.id);
+      }
+
       setName(data.name);
       setGoal(data.goal || '');
       setWeeks(data.weeks);

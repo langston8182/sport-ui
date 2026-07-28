@@ -8,6 +8,120 @@ import { weightsService } from '../services/weights';
 import { Loader } from '../components/ui/Loader';
 import { Program } from '../types';
 
+const env = import.meta.env as Record<string, string | undefined>;
+const HOME_PREFIX = (env.VITE_HOME_PROGRAM_PREFIX || 'Maison').trim().toLowerCase();
+const HOME_LATITUDE = Number.parseFloat(env.VITE_HOME_LATITUDE || '');
+const HOME_LONGITUDE = Number.parseFloat(env.VITE_HOME_LONGITUDE || '');
+const HOME_RADIUS_METERS = Number.parseFloat(env.VITE_HOME_RADIUS_METERS || '120');
+
+const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
+const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
+const CURRENT_AWAY_PROGRAM_ID_KEY = 'currentAwayProgramId';
+const LOCATION_CONTEXT_KEY = 'dashboardLocationContext';
+
+function readStoredLocationContext(): boolean | null {
+  const raw = localStorage.getItem(LOCATION_CONTEXT_KEY);
+  if (raw === 'home') return true;
+  if (raw === 'away') return false;
+  return null;
+}
+
+function storeLocationContext(value: boolean | null): void {
+  if (value === true) {
+    localStorage.setItem(LOCATION_CONTEXT_KEY, 'home');
+    return;
+  }
+
+  if (value === false) {
+    localStorage.setItem(LOCATION_CONTEXT_KEY, 'away');
+    return;
+  }
+
+  localStorage.removeItem(LOCATION_CONTEXT_KEY);
+}
+
+function hasHomeCoordinates() {
+  return Number.isFinite(HOME_LATITUDE) && Number.isFinite(HOME_LONGITUDE);
+}
+
+function haversineDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const earthRadius = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadius * c;
+}
+
+function isHomeProgram(program: Program): boolean {
+  return program.name.trim().toLowerCase().startsWith(HOME_PREFIX);
+}
+
+function resolveCurrentProgram(programs: Program[], isAtHome: boolean | null): Program | null {
+  if (programs.length === 0) return null;
+
+  const storedProgramId = localStorage.getItem(CURRENT_PROGRAM_ID_KEY);
+  const storedHomeProgramId = localStorage.getItem(CURRENT_HOME_PROGRAM_ID_KEY);
+  const storedAwayProgramId = localStorage.getItem(CURRENT_AWAY_PROGRAM_ID_KEY);
+
+  if (isAtHome === null) {
+    return (
+      programs.find((program) => program.id === storedProgramId) ||
+      programs[0] ||
+      null
+    );
+  }
+
+  const homePrograms = programs.filter((program) => isHomeProgram(program));
+  const awayPrograms = programs.filter((program) => !isHomeProgram(program));
+  const matchingPrograms = isAtHome
+    ? (homePrograms.length > 0 ? homePrograms : programs)
+    : (awayPrograms.length > 0 ? awayPrograms : programs);
+
+  const preferredId = isAtHome ? storedHomeProgramId : storedAwayProgramId;
+
+  return (
+    matchingPrograms.find((program) => program.id === preferredId) ||
+    matchingPrograms.find((program) => program.id === storedProgramId) ||
+    matchingPrograms[0] ||
+    null
+  );
+}
+
+async function detectAtHome(): Promise<boolean | null> {
+  if (!hasHomeCoordinates() || !navigator.geolocation) {
+    return null;
+  }
+
+  try {
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 60000,
+      });
+    });
+
+    const { latitude, longitude } = position.coords;
+    const distanceMeters = haversineDistanceMeters(
+      latitude,
+      longitude,
+      HOME_LATITUDE,
+      HOME_LONGITUDE
+    );
+
+    return distanceMeters <= HOME_RADIUS_METERS;
+  } catch (error) {
+    return null;
+  }
+}
+
 export function Dashboard() {
   const [counts, setCounts] = useState({
     exercises: 0,
@@ -16,7 +130,46 @@ export function Dashboard() {
     weights: 0,
   });
   const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
+  const [isAtHome, setIsAtHome] = useState<boolean | null>(() => readStoredLocationContext());
+  const [detectingLocation, setDetectingLocation] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const locationContext = (() => {
+    const geolocationAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation;
+
+    if (!hasHomeCoordinates()) {
+      return {
+        label: 'Position: domicile non configure',
+        chipClass: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300/60',
+      };
+    }
+
+    if (!geolocationAvailable) {
+      return {
+        label: 'Position: geolocalisation indisponible',
+        chipClass: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300/60',
+      };
+    }
+
+    if (isAtHome === true) {
+      return {
+        label: 'Position: maison',
+        chipClass: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200/70',
+      };
+    }
+
+    if (isAtHome === false) {
+      return {
+        label: 'Position: exterieur',
+        chipClass: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200/70',
+      };
+    }
+
+    return {
+      label: 'Position: inconnue',
+      chipClass: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200/70',
+    };
+  })();
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -36,11 +189,7 @@ export function Dashboard() {
         });
 
         const programList = Array.isArray(programs) ? programs : [];
-        const storedProgramId = localStorage.getItem('currentProgramId');
-        const resolvedCurrentProgram =
-          programList.find((program) => program.id === storedProgramId) ||
-          programList[0] ||
-          null;
+        const resolvedCurrentProgram = resolveCurrentProgram(programList, isAtHome);
 
         setCurrentProgram(resolvedCurrentProgram);
       } catch (error) {
@@ -53,7 +202,15 @@ export function Dashboard() {
     };
 
     fetchCounts();
-  }, []);
+  }, [isAtHome]);
+
+  const handleDetectLocation = async () => {
+    setDetectingLocation(true);
+    const detected = await detectAtHome();
+    setIsAtHome(detected);
+    storeLocationContext(detected);
+    setDetectingLocation(false);
+  };
 
   if (loading) {
     return <Loader />;
@@ -135,14 +292,37 @@ export function Dashboard() {
           <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-pastel-purple-400 to-pastel-purple-500 flex items-center justify-center">
             <Plus className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
-          <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-semibold w-fit ${locationContext.chipClass}`}>
+                {locationContext.label}
+              </span>
+              <button
+                type="button"
+                onClick={() => void handleDetectLocation()}
+                disabled={detectingLocation || !hasHomeCoordinates() || !navigator.geolocation}
+                className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
+              </button>
+            </div>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 gap-1.5 md:gap-4 lg:gap-6">
           {currentProgram && (
             <Link
               to={`/programs/${currentProgram.id}?mode=view`}
-              onClick={() => localStorage.setItem('currentProgramId', currentProgram.id)}
+              onClick={() => {
+                localStorage.setItem(CURRENT_PROGRAM_ID_KEY, currentProgram.id);
+                if (isAtHome === true) {
+                  localStorage.setItem(CURRENT_HOME_PROGRAM_ID_KEY, currentProgram.id);
+                }
+                if (isAtHome === false) {
+                  localStorage.setItem(CURRENT_AWAY_PROGRAM_ID_KEY, currentProgram.id);
+                }
+              }}
               className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-4 lg:p-6 border border-dashed border-pastel-neutral-300/50 rounded-md md:rounded-xl lg:rounded-2xl hover:border-pastel-blue-400 hover:bg-gradient-to-br hover:from-pastel-blue-50 hover:to-pastel-purple-50/50 transition-all duration-300 group"
             >
               <div className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-sm md:rounded-lg lg:rounded-xl bg-pastel-neutral-100 group-hover:bg-pastel-blue-100 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
@@ -154,6 +334,9 @@ export function Dashboard() {
                 </span>
                 <span className="text-pastel-neutral-500 block text-[10px] md:text-xs mt-0.5 truncate max-w-[90px] md:max-w-[140px] lg:max-w-[180px]">
                   {currentProgram.name}
+                </span>
+                <span className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-[11px] font-semibold ${locationContext.chipClass}`}>
+                  {isAtHome === true ? 'Maison' : isAtHome === false ? 'Exterieur' : 'Auto'}
                 </span>
               </div>
             </Link>
