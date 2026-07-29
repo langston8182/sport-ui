@@ -13,6 +13,10 @@ phases:
       - echo "VITE_API_URL=${API_URL}" >> .env
       - echo "VITE_AUTH_BASE_URL=${AUTH_BASE_URL}" >> .env
       - echo "VITE_CDN_URL=${CDN_URL}" >> .env
+      - echo "VITE_HOME_PROGRAM_PREFIX=${HOME_PROGRAM_PREFIX:-Maison}" >> .env
+      - echo "VITE_HOME_LATITUDE=${HOME_LATITUDE:-45.102417}" >> .env
+      - echo "VITE_HOME_LONGITUDE=${HOME_LONGITUDE:--0.385333}" >> .env
+      - echo "VITE_HOME_RADIUS_METERS=${HOME_RADIUS_METERS:-120}" >> .env
       - cat .env
       - echo "Récupération des paramètres"
   build:

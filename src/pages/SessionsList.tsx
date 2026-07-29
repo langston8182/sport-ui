@@ -126,17 +126,17 @@ export function SessionsList() {
 
   return (
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">Sessions</h1>
             <p className="text-gray-600 text-lg">{sessions.length} total sessions</p>
           </div>
           <Link
               to="/sessions/new"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="btn-primary inline-flex w-full sm:w-auto justify-center items-center gap-2"
           >
             <Plus className="w-5 h-5" />
-            <span>New Session</span>
+            <span>Nouvelle session</span>
           </Link>
         </div>
 

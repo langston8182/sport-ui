@@ -104,14 +104,14 @@ export function ExercisesList() {
 
   return (
       <div>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent mb-3">Exercices</h1>
             <p className="text-gray-600 text-lg">{exercises.length} exercices au total</p>
           </div>
           <Link
               to="/exercises/new"
-              className="btn-primary flex items-center gap-2"
+              className="btn-primary inline-flex w-full sm:w-auto justify-center items-center gap-2"
           >
             <Plus className="w-5 h-5" />
             <span>Nouvel exercice</span>

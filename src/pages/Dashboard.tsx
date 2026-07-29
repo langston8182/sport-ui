@@ -9,6 +9,9 @@ import { Loader } from '../components/ui/Loader';
 import { Program } from '../types';
 
 const env = import.meta.env as Record<string, string | undefined>;
+const DEFAULT_HOME_LATITUDE = 45.102417;
+const DEFAULT_HOME_LONGITUDE = -0.385333;
+const DEFAULT_HOME_RADIUS_METERS = 120;
 
 function readEnv(...keys: string[]): string | undefined {
   for (const key of keys) {
@@ -33,15 +36,21 @@ function parseEnvNumber(raw: string | undefined): number {
 const HOME_PREFIX = (readEnv('VITE_HOME_PROGRAM_PREFIX', 'EXPO_PUBLIC_HOME_PROGRAM_PREFIX') || 'Maison')
   .trim()
   .toLowerCase();
-const HOME_LATITUDE = parseEnvNumber(readEnv('VITE_HOME_LATITUDE', 'EXPO_PUBLIC_HOME_LATITUDE'));
-const HOME_LONGITUDE = parseEnvNumber(readEnv('VITE_HOME_LONGITUDE', 'EXPO_PUBLIC_HOME_LONGITUDE'));
-const HOME_RADIUS_METERS = parseEnvNumber(readEnv('VITE_HOME_RADIUS_METERS', 'EXPO_PUBLIC_HOME_RADIUS_METERS') || '120');
+const HOME_LATITUDE = parseEnvNumber(
+  readEnv('VITE_HOME_LATITUDE', 'EXPO_PUBLIC_HOME_LATITUDE') ?? String(DEFAULT_HOME_LATITUDE)
+);
+const HOME_LONGITUDE = parseEnvNumber(
+  readEnv('VITE_HOME_LONGITUDE', 'EXPO_PUBLIC_HOME_LONGITUDE') ?? String(DEFAULT_HOME_LONGITUDE)
+);
+const HOME_RADIUS_METERS = parseEnvNumber(
+  readEnv('VITE_HOME_RADIUS_METERS', 'EXPO_PUBLIC_HOME_RADIUS_METERS') ?? String(DEFAULT_HOME_RADIUS_METERS)
+);
 const HOME_ENV_SOURCE =
   hasEnvValue('VITE_HOME_LATITUDE') && hasEnvValue('VITE_HOME_LONGITUDE')
     ? 'VITE_*'
     : (hasEnvValue('EXPO_PUBLIC_HOME_LATITUDE') && hasEnvValue('EXPO_PUBLIC_HOME_LONGITUDE')
       ? 'EXPO_PUBLIC_*'
-      : 'none');
+      : 'fallback');
 
 const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
 const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
