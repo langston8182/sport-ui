@@ -110,7 +110,7 @@ async function detectAtHome(): Promise<DetectResult> {
   if (!hasHomeCoordinates()) {
     return {
       value: null,
-      error: 'Coordonnees domicile manquantes dans le fichier .env.local.',
+      error: 'Coordonnees domicile manquantes (VITE_HOME_LATITUDE / VITE_HOME_LONGITUDE). Redemarre Expo avec cache vide apres modification des fichiers .env.',
     };
   }
 
