@@ -349,7 +349,7 @@ export function Dashboard() {
               <button
                 type="button"
                 onClick={() => void handleDetectLocation()}
-                disabled={detectingLocation || !hasHomeCoordinates() || !navigator.geolocation}
+                disabled={detectingLocation}
                 className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
