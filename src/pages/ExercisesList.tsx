@@ -178,7 +178,67 @@ export function ExercisesList() {
             </div>
         ) : (
             <div className="card-gradient rounded-2xl overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="md:hidden divide-y divide-gray-200">
+                {filteredExercises.map((exercise) => (
+                    <div
+                        key={exercise.id}
+                        className="p-4 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <img
+                            src={getResponsiveImageUrl(exercise.imageKeyOriginal)}
+                            srcSet={getResponsiveImageSrcSet(exercise.imageKeyOriginal)}
+                            sizes="64px"
+                            alt={exercise.name}
+                            className="w-16 h-16 object-cover rounded-lg cursor-pointer flex-shrink-0"
+                            onClick={() => {
+                              setSelectedImage({
+                                url: getResponsiveImageUrl(exercise.imageKeyOriginal),
+                                srcSet: getResponsiveImageSrcSet(exercise.imageKeyOriginal),
+                                alt: exercise.name,
+                              });
+                              setImageModalOpen(true);
+                            }}
+                        />
+
+                        <div className="min-w-0 flex-1" onClick={() => navigate(`/exercises/${exercise.id}?mode=view`)}>
+                          <p className="font-semibold text-gray-900 truncate">{exercise.name}</p>
+                          <div className="mt-1">
+                            <span
+                                className={`inline-flex px-2.5 py-1 text-xs font-semibold rounded-full ${
+                                    exercise.mode === 'reps'
+                                        ? 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800'
+                                        : 'bg-gradient-to-r from-emerald-100 to-green-200 text-emerald-800'
+                                }`}
+                            >
+                              {exercise.mode === 'reps' ? 'Repetitions' : 'Temps'}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm text-gray-600 break-words">{exercise.notes || 'Aucune note'}</p>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5 flex-shrink-0">
+                          <button
+                              onClick={() => navigate(`/exercises/${exercise.id}/edit`)}
+                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200"
+                              aria-label="Edit exercise"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={() => setDeleteId(exercise.id)}
+                              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200"
+                              aria-label="Delete exercise"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                   <tr>

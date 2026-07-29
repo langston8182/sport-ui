@@ -325,8 +325,44 @@ export function ProgramForm() {
 
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">Schedule</h2>
-                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                    <table className="w-full">
+                  <div className="md:hidden space-y-3">
+                    {Array.from({ length: weeks }, (_, weekIndex) => {
+                      const week = weekIndex + 1;
+
+                      return (
+                          <div key={week} className="border border-gray-200 rounded-lg p-3 bg-white">
+                            <p className="text-sm font-semibold text-gray-800 mb-2">Week {week}</p>
+                            <div className="space-y-2">
+                              {Array.from({ length: sessionsPerWeek }, (_, slotIndex) => {
+                                const slot = slotIndex + 1;
+                                const entry = getScheduleEntry(week, slot);
+                                const session = entry ? sessions[entry.sessionId] : null;
+
+                                return (
+                                    <div key={slot} className="flex items-center justify-between gap-2 border border-gray-100 rounded-lg px-3 py-2">
+                                      <span className="text-xs font-medium text-gray-500">Slot {slot}</span>
+                                      {session ? (
+                                          <button
+                                              type="button"
+                                              onClick={() => handleViewSession(session.id)}
+                                              className="text-sm text-blue-700 font-medium truncate max-w-[70%] text-right"
+                                          >
+                                            {session.name}
+                                          </button>
+                                      ) : (
+                                          <span className="text-sm text-gray-400">No session</span>
+                                      )}
+                                    </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="w-full min-w-[720px]">
                       <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-r border-gray-200">
@@ -471,8 +507,60 @@ export function ProgramForm() {
                     Click on any cell to assign a session to that week and slot
                   </p>
 
-                  <div className="overflow-x-auto border border-gray-200 rounded-lg">
-                    <table className="w-full" key={renderKey}>
+                  <div className="md:hidden space-y-3" key={renderKey}>
+                    {Array.from({ length: weeks }, (_, weekIndex) => {
+                      const week = weekIndex + 1;
+
+                      return (
+                          <div key={week} className="border border-gray-200 rounded-lg p-3 bg-white">
+                            <p className="text-sm font-semibold text-gray-800 mb-2">Week {week}</p>
+                            <div className="space-y-2">
+                              {Array.from({ length: sessionsPerWeek }, (_, slotIndex) => {
+                                const slot = slotIndex + 1;
+                                const entry = getScheduleEntry(week, slot);
+                                const session = entry ? sessions[entry.sessionId] : null;
+
+                                return (
+                                    <div key={slot} className="flex items-center justify-between gap-2 border border-gray-100 rounded-lg px-3 py-2">
+                                      <span className="text-xs font-medium text-gray-500">Slot {slot}</span>
+                                      {session ? (
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleViewSession(session.id)}
+                                                className="text-sm text-blue-700 font-medium truncate"
+                                            >
+                                              {session.name}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveEntry(week, slot)}
+                                                className="p-1 text-blue-600 hover:text-blue-800"
+                                                aria-label="Remove session"
+                                            >
+                                              <X className="w-4 h-4" />
+                                            </button>
+                                          </div>
+                                      ) : (
+                                          <button
+                                              type="button"
+                                              onClick={() => handleCellClick(week, slot)}
+                                              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                          >
+                                            Assign
+                                          </button>
+                                      )}
+                                    </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="hidden md:block overflow-x-auto border border-gray-200 rounded-lg">
+                    <table className="w-full min-w-[720px]" key={renderKey}>
                       <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border-r border-gray-200">

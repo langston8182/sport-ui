@@ -9,10 +9,39 @@ import { Loader } from '../components/ui/Loader';
 import { Program } from '../types';
 
 const env = import.meta.env as Record<string, string | undefined>;
-const HOME_PREFIX = (env.VITE_HOME_PROGRAM_PREFIX || 'Maison').trim().toLowerCase();
-const HOME_LATITUDE = Number.parseFloat(env.VITE_HOME_LATITUDE || '');
-const HOME_LONGITUDE = Number.parseFloat(env.VITE_HOME_LONGITUDE || '');
-const HOME_RADIUS_METERS = Number.parseFloat(env.VITE_HOME_RADIUS_METERS || '120');
+
+function readEnv(...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = env[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  return undefined;
+}
+
+function hasEnvValue(key: string): boolean {
+  const value = env[key];
+  return value !== undefined && value !== null && String(value).trim() !== '';
+}
+
+function parseEnvNumber(raw: string | undefined): number {
+  if (!raw) return Number.NaN;
+  return Number.parseFloat(raw.replace(',', '.'));
+}
+
+const HOME_PREFIX = (readEnv('VITE_HOME_PROGRAM_PREFIX', 'EXPO_PUBLIC_HOME_PROGRAM_PREFIX') || 'Maison')
+  .trim()
+  .toLowerCase();
+const HOME_LATITUDE = parseEnvNumber(readEnv('VITE_HOME_LATITUDE', 'EXPO_PUBLIC_HOME_LATITUDE'));
+const HOME_LONGITUDE = parseEnvNumber(readEnv('VITE_HOME_LONGITUDE', 'EXPO_PUBLIC_HOME_LONGITUDE'));
+const HOME_RADIUS_METERS = parseEnvNumber(readEnv('VITE_HOME_RADIUS_METERS', 'EXPO_PUBLIC_HOME_RADIUS_METERS') || '120');
+const HOME_ENV_SOURCE =
+  hasEnvValue('VITE_HOME_LATITUDE') && hasEnvValue('VITE_HOME_LONGITUDE')
+    ? 'VITE_*'
+    : (hasEnvValue('EXPO_PUBLIC_HOME_LATITUDE') && hasEnvValue('EXPO_PUBLIC_HOME_LONGITUDE')
+      ? 'EXPO_PUBLIC_*'
+      : 'none');
 
 const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
 const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
@@ -173,6 +202,10 @@ export function Dashboard() {
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const geolocationEnvDebug =
+    `Source env: ${HOME_ENV_SOURCE} | lat: ${Number.isFinite(HOME_LATITUDE) ? HOME_LATITUDE : 'missing'} | ` +
+    `lon: ${Number.isFinite(HOME_LONGITUDE) ? HOME_LONGITUDE : 'missing'} | radius: ${Number.isFinite(HOME_RADIUS_METERS) ? HOME_RADIUS_METERS : 'missing'}`;
 
   const locationContext = (() => {
     const geolocationAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation;
@@ -382,6 +415,9 @@ export function Dashboard() {
                 {locationError}
               </p>
             )}
+            <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-fit">
+              {geolocationEnvDebug}
+            </p>
           </div>
         </div>
         

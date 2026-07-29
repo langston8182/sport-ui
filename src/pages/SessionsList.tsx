@@ -175,7 +175,63 @@ export function SessionsList() {
             </div>
         ) : (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="md:hidden divide-y divide-gray-200">
+                {filteredSessions.map((session) => (
+                    <div
+                        key={session.id}
+                        className="p-4 hover:bg-gray-50 transition-colors"
+                        onClick={() => navigate(`/sessions/${session.id}?mode=view`)}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 truncate">{session.name}</p>
+                          <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
+                            <span>{session.items.length} exercices</span>
+                            <span>{Math.round(calculateDuration(session) / 60)} min</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button
+                              onClick={() => {
+                                navigate(`/sessions/${session.id}/play`, {
+                                  state: { session, exercises },
+                                });
+                              }}
+                              className="p-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                              aria-label="Play session"
+                          >
+                            <Play className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={() => navigate(`/sessions/${session.id}/edit`)}
+                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              aria-label="Edit session"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={() => void handleDuplicate(session)}
+                              disabled={duplicatingId === session.id}
+                              className="p-2 text-gray-600 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label="Duplicate session"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={() => setDeleteId(session.id)}
+                              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              aria-label="Delete session"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
