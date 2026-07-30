@@ -275,7 +275,7 @@ export function ProgramForm() {
       <div>
         <button
             onClick={() => navigate('/programs')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            className="btn-outline flex items-center gap-2 mb-6 w-full sm:w-auto justify-center sm:justify-start"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Programs</span>
@@ -289,7 +289,7 @@ export function ProgramForm() {
             {isView && (
                 <button
                     onClick={() => navigate(`/programs/${id}/edit`)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="btn-primary flex items-center justify-center gap-2"
                 >
                   <Edit className="w-4 h-4" />
                   <span>Edit</span>

@@ -378,56 +378,59 @@ export function Dashboard() {
       </div>
 
       <div className="card-pastel p-4 md:p-8 mt-6 md:mt-8">
-        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-          <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-pastel-purple-400 to-pastel-purple-500 flex items-center justify-center">
-            <Plus className="w-4 h-4 md:w-5 md:h-5 text-white" />
-          </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-semibold w-fit ${locationContext.chipClass}`}>
-                {locationContext.label}
-              </span>
-              <button
-                type="button"
-                onClick={() => void handleDetectLocation()}
-                disabled={detectingLocation}
-                className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setManualLocationContext(true)}
-                className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
-                  isAtHome === true
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                    : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-emerald-50 hover:border-emerald-300'
-                }`}
-              >
-                Je suis a la maison
-              </button>
-              <button
-                type="button"
-                onClick={() => setManualLocationContext(false)}
-                className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
-                  isAtHome === false
-                    ? 'bg-blue-100 text-blue-800 border-blue-300'
-                    : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-blue-50 hover:border-blue-300'
-                }`}
-              >
-                Je suis a l'exterieur
-              </button>
+        <div className="mb-4 md:mb-6 space-y-3 md:space-y-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-gradient-to-br from-pastel-purple-400 to-pastel-purple-500 flex items-center justify-center">
+              <Plus className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            {locationError && (
-              <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-fit">
-                {locationError}
-              </p>
-            )}
-            <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-fit">
-              {geolocationEnvDebug}
-            </p>
+            <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
           </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-semibold w-fit ${locationContext.chipClass}`}>
+              {locationContext.label}
+            </span>
+            <button
+              type="button"
+              onClick={() => void handleDetectLocation()}
+              disabled={detectingLocation}
+              className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setManualLocationContext(true)}
+              className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
+                isAtHome === true
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-emerald-50 hover:border-emerald-300'
+              }`}
+            >
+              Je suis a la maison
+            </button>
+            <button
+              type="button"
+              onClick={() => setManualLocationContext(false)}
+              className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
+                isAtHome === false
+                  ? 'bg-blue-100 text-blue-800 border-blue-300'
+                  : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-blue-50 hover:border-blue-300'
+              }`}
+            >
+              Je suis a l'exterieur
+            </button>
+          </div>
+
+          {locationError && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 w-full md:w-fit">
+              {locationError}
+            </p>
+          )}
+
+          <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-full break-words">
+            {geolocationEnvDebug}
+          </p>
         </div>
         
         <div className="grid grid-cols-1 gap-1.5 md:gap-4 lg:gap-6">
@@ -443,7 +446,7 @@ export function Dashboard() {
                   localStorage.setItem(CURRENT_AWAY_PROGRAM_ID_KEY, currentProgram.id);
                 }
               }}
-              className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-4 lg:p-6 border border-dashed border-pastel-neutral-300/50 rounded-md md:rounded-xl lg:rounded-2xl hover:border-pastel-blue-400 hover:bg-gradient-to-br hover:from-pastel-blue-50 hover:to-pastel-purple-50/50 transition-all duration-300 group"
+              className="flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 lg:p-6 border border-dashed border-pastel-neutral-300/50 rounded-md md:rounded-xl lg:rounded-2xl hover:border-pastel-blue-400 hover:bg-gradient-to-br hover:from-pastel-blue-50 hover:to-pastel-purple-50/50 transition-all duration-300 group"
             >
               <div className="w-6 h-6 md:w-10 md:h-10 lg:w-12 lg:h-12 rounded-sm md:rounded-lg lg:rounded-xl bg-pastel-neutral-100 group-hover:bg-pastel-blue-100 flex items-center justify-center transition-all duration-300 group-hover:scale-110">
                 <CalendarDays className="w-3 h-3 md:w-5 md:h-5 lg:w-6 lg:h-6 text-pastel-neutral-400 group-hover:text-pastel-blue-600" />
@@ -452,7 +455,7 @@ export function Dashboard() {
                 <span className="text-pastel-neutral-700 group-hover:text-pastel-blue-700 font-medium block text-xs md:text-sm lg:text-base leading-tight">
                   Programme en cours
                 </span>
-                <span className="text-pastel-neutral-500 block text-[10px] md:text-xs mt-0.5 truncate max-w-[90px] md:max-w-[140px] lg:max-w-[180px]">
+                <span className="text-pastel-neutral-500 block text-[10px] md:text-xs mt-0.5 leading-snug break-words">
                   {currentProgram.name}
                 </span>
                 <span className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-[11px] font-semibold ${locationContext.chipClass}`}>
