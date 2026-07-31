@@ -15,6 +15,7 @@ import Timer from './pages/Timer';
 import SessionPlay from './pages/SessionPlay';
 import WeightTracker from './pages/WeightTracker';
 import ExerciseProgressionPage from './pages/ExerciseProgressionPage';
+import RunningPlan from './pages/RunningPlan';
 import { RestTimerProvider } from './contexts/RestTimerContext';
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
                       <Route path="/timer" element={<Timer />} />
                       <Route path="/weight" element={<WeightTracker />} />
                       <Route path="/progression" element={<ExerciseProgressionPage />} />
+                      <Route path="/running-plan" element={<RunningPlan />} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </Layout>

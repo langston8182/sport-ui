@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer, Clock, Scale, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, ListChecks, CalendarDays, Timer, Clock, Scale, TrendingUp, Footprints } from 'lucide-react';
 
 const navItems = [
   { to: '/',           icon: LayoutDashboard, label: 'Tableau de bord', exact: true, iconCls: 'bg-brand-100 text-brand-600' },
@@ -7,7 +7,8 @@ const navItems = [
   { to: '/sessions',   icon: ListChecks,      label: 'Sessions',        iconCls: 'bg-sport-100 text-sport-600' },
   { to: '/programs',   icon: CalendarDays,    label: 'Programmes',      iconCls: 'bg-purple-100 text-purple-600' },
   { to: '/weight',     icon: Scale,           label: 'Suivi du Poids',  iconCls: 'bg-rose-100 text-rose-600' },
-  { to: '/progression',icon: TrendingUp,      label: 'Progression',     iconCls: 'bg-cyan-100 text-cyan-600' },
+  { to: '/progression',  icon: TrendingUp,  label: 'Progression',     iconCls: 'bg-cyan-100 text-cyan-600' },
+  { to: '/running-plan', icon: Footprints,  label: 'Plan 10 km',      iconCls: 'bg-sport-100 text-sport-600' },
 ];
 
 const timerItems = [
