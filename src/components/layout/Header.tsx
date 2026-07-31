@@ -4,36 +4,48 @@ import { Link } from 'react-router-dom';
 
 export function Header() {
   const { logout, profile } = useAuth();
-  console.log("profile", profile);
+
+  const initials = profile
+    ? `${profile.given_name?.[0] ?? ''}${profile.family_name?.[0] ?? ''}`.toUpperCase() || '?'
+    : '?';
 
   return (
-    <header className="bg-white/90 backdrop-blur-xl border-b border-pastel-neutral-200/30 sticky top-0 z-40 shadow-soft">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-18">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-40" style={{ boxShadow: '0 1px 0 0 #f3f4f6' }}>
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+
+          {/* ── Logo ── */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-pastel-blue-500 via-pastel-purple-500 to-pastel-blue-600 rounded-2xl flex items-center justify-center shadow-pastel group-hover:shadow-pastel-lg transition-all duration-300 group-hover:scale-105">
-              <Dumbbell className="w-6 h-6 text-white" />
+            <div className="w-9 h-9 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-btn transition-all duration-300 group-hover:shadow-glow-brand group-hover:scale-105">
+              <Dumbbell className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gradient-primary">Training Manager</span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-base font-display font-bold text-gray-900 tracking-tight">Training</span>
+              <span className="text-base font-display font-bold text-brand-600 tracking-tight">Manager</span>
+            </div>
           </Link>
 
-          <div className="flex items-center gap-4">
+          {/* ── Right side ── */}
+          <div className="flex items-center gap-2">
             {profile && (
-              <div className="hidden sm:block text-right">
-                <p className="text-sm text-pastel-neutral-600">
-                  Bonjour <span className="text-pastel-neutral-800 font-semibold">{profile.given_name} {profile.family_name}</span>
-                </p>
-                <p className="text-xs text-pastel-neutral-500">{profile.email}</p>
+              <div className="hidden sm:flex items-center gap-3 pr-3 mr-1 border-r border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-xs font-bold shadow-sm flex-shrink-0">
+                  {initials}
+                </div>
+                <div className="hidden lg:block">
+                  <p className="text-sm font-semibold text-gray-800 leading-none">
+                    {profile.given_name} {profile.family_name}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5 leading-none">{profile.email}</p>
+                </div>
               </div>
             )}
-            <button
-              onClick={logout}
-              className="flex items-center gap-2 px-4 py-2.5 text-pastel-neutral-600 hover:text-pastel-rose-700 hover:bg-pastel-rose-50 rounded-xl transition-all duration-300 backdrop-blur-sm border border-transparent hover:border-pastel-rose-200"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden sm:inline font-medium">Déconnexion</span>
+            <button onClick={logout} className="btn-ghost">
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Déconnexion</span>
             </button>
           </div>
+
         </div>
       </div>
     </header>

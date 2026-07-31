@@ -16,143 +16,104 @@ export function Layout({ children }: LayoutProps) {
     return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
   };
 
+  const isUrgent = restTimer ? restTimer.timeLeft <= 10 && restTimer.timeLeft > 0 : false;
+  const isDone = restTimer?.timeLeft === 0;
+  const progress = restTimer ? restTimer.timeLeft / restTimer.totalTime : 0;
+  const circumference = 2 * Math.PI * 52;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pastel-blue-50 via-white to-pastel-purple-50">
+    <div className="min-h-screen bg-[#f4f5fb]">
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className={`flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full fade-in ${restTimer?.isMinimized ? 'pb-28 sm:pb-32' : ''}`}>
+        <main className={`flex-1 p-5 md:p-8 w-full fade-in ${restTimer?.isMinimized ? 'pb-28 sm:pb-32' : ''}`}>
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
         </main>
       </div>
 
+      {/* ── Rest timer modal ── */}
       {restTimer && !restTimer.isMinimized && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 lg:p-8 w-full max-w-xs sm:max-w-sm text-center">
-            <div className="mb-3 sm:mb-4">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Temps de repos</h3>
-              <p className="text-gray-600 text-xs sm:text-sm break-words">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style={{ background: 'rgba(15,23,42,.55)', backdropFilter: 'blur(6px)' }}>
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center animate-scale-in">
+
+            {/* Header strip */}
+            <div className={`-mx-6 sm:-mx-8 -mt-6 sm:-mt-8 px-6 sm:px-8 py-4 rounded-t-3xl mb-6 ${
+              isDone ? 'bg-sport-500' : isUrgent ? 'bg-rose-500' : 'bg-brand-600'
+            }`}>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-widest">Temps de repos</p>
+              <h3 className="text-white font-display font-bold text-lg leading-tight mt-0.5 break-words">
                 {restTimer.exerciseName}
-              </p>
-              <p className="text-gray-500 text-xs">
-                Série {restTimer.setNumber} terminée
-              </p>
+              </h3>
+              <p className="text-white/70 text-xs mt-0.5">Série {restTimer.setNumber} terminée</p>
             </div>
 
-            <div className="mb-4 sm:mb-6">
-              <div className="text-4xl sm:text-5xl lg:text-6xl font-mono font-bold text-blue-600 mb-3 sm:mb-4">
-                {formatTime(restTimer.timeLeft)}
-              </div>
-
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 mx-auto mb-3 sm:mb-4">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    className="text-gray-200"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    fill="none"
-                    strokeLinecap="round"
-                    className={`transition-all duration-1000 ${
-                      restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
-                    }`}
-                    strokeDasharray={`${2 * Math.PI * 56}`}
-                    strokeDashoffset={`${2 * Math.PI * 56 * (restTimer.timeLeft / restTimer.totalTime)}`}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className={`text-lg sm:text-xl lg:text-2xl font-bold ${
-                    restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'
-                  }`}>
-                    {Math.round((1 - restTimer.timeLeft / restTimer.totalTime) * 100)}%
-                  </span>
-                </div>
+            {/* Timer ring */}
+            <div className="relative w-36 h-36 mx-auto mb-6">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" stroke="currentColor" strokeWidth="7"
+                        fill="none" className="text-gray-100" />
+                <circle cx="60" cy="60" r="52" stroke="currentColor" strokeWidth="7"
+                        fill="none" strokeLinecap="round"
+                        className={`transition-all duration-1000 ${
+                          isDone ? 'text-sport-500' : isUrgent ? 'text-rose-500' : 'text-brand-500'
+                        }`}
+                        strokeDasharray={circumference}
+                        strokeDashoffset={circumference * progress} />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-4xl font-display font-black tabular-nums leading-none ${
+                  isDone ? 'text-sport-500' : isUrgent ? 'text-rose-500' : 'text-brand-600'
+                }`}>
+                  {formatTime(restTimer.timeLeft)}
+                </span>
+                {isDone && <span className="text-sport-500 text-xs font-bold mt-1">Terminé !</span>}
+                {isUrgent && <span className="text-rose-500 text-xs font-bold mt-1 animate-pulse">Prêt !</span>}
               </div>
             </div>
 
-            <div className="space-y-2 sm:space-y-3">
+            {/* Actions */}
+            <div className="space-y-2">
               {restTimer.timeLeft > 0 && (
-                <button
-                  onClick={minimizeRestTimer}
-                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-base sm:text-lg"
-                >
-                  Minimiser le minuteur
+                <button onClick={minimizeRestTimer} className="btn-primary w-full">
+                  Minimiser
                 </button>
               )}
-
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                <button
-                  onClick={stopRestTimer}
-                  className="flex-1 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm sm:text-base"
-                >
-                  Ignorer
+              {isDone && (
+                <button onClick={stopRestTimer} className="btn-success w-full">
+                  Continuer l'entraînement →
                 </button>
-                {restTimer.timeLeft === 0 && (
-                  <button
-                    onClick={stopRestTimer}
-                    className="flex-1 px-3 sm:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm sm:text-base"
-                  >
-                    Continuer
-                  </button>
-                )}
-              </div>
+              )}
+              <button onClick={stopRestTimer} className="btn-ghost w-full text-gray-400">
+                Ignorer le repos
+              </button>
             </div>
-
-            {restTimer.timeLeft <= 10 && restTimer.timeLeft > 0 && (
-              <p className="text-red-500 text-xs sm:text-sm mt-2 sm:mt-3 font-medium animate-pulse">
-                Préparez-vous !
-              </p>
-            )}
-
-            {restTimer.timeLeft === 0 && (
-              <p className="text-green-600 text-sm sm:text-base lg:text-lg mt-2 sm:mt-3 font-bold animate-bounce">
-                🎉 Repos terminé !
-              </p>
-            )}
           </div>
         </div>
       )}
 
+      {/* ── Rest timer minimized bar ── */}
       {restTimer && restTimer.isMinimized && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 p-3 sm:p-4">
-          <div className="mx-auto max-w-6xl bg-white border border-blue-200 rounded-xl shadow-2xl p-3 sm:p-4">
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base font-semibold text-gray-900">Temps de repos en cours</p>
-                <p className="text-xs sm:text-sm text-gray-600 truncate">
-                  {restTimer.exerciseName} · Série {restTimer.setNumber}
-                </p>
-              </div>
-              <span className={`text-2xl sm:text-3xl font-mono font-bold ${restTimer.timeLeft <= 10 ? 'text-red-500' : 'text-blue-600'}`}>
+        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3">
+          <div className="mx-auto max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-card-hover p-4 flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+              isUrgent ? 'bg-rose-500' : 'bg-brand-600'
+            }`}>
+              <span className={`text-sm font-display font-black text-white tabular-nums`}>
                 {formatTime(restTimer.timeLeft)}
               </span>
             </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <button
-                onClick={expandRestTimer}
-                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold text-base sm:text-lg"
-              >
-                Ouvrir
-              </button>
-              <button
-                onClick={stopRestTimer}
-                className="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold text-base sm:text-lg"
-              >
-                Ignorer
-              </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 leading-none">Repos en cours</p>
+              <p className="text-xs text-gray-400 mt-0.5 truncate">
+                {restTimer.exerciseName} · Série {restTimer.setNumber}
+              </p>
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button onClick={expandRestTimer} className="btn-primary py-2 px-4 text-xs">Ouvrir</button>
+              <button onClick={stopRestTimer} className="btn-ghost py-2 px-3 text-xs">Ignorer</button>
             </div>
           </div>
         </div>
