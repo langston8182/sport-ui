@@ -386,40 +386,40 @@ export function Dashboard() {
             <h2 className="text-lg md:text-2xl font-bold text-pastel-neutral-800">Actions rapides</h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] md:text-xs font-semibold w-fit ${locationContext.chipClass}`}>
-              {locationContext.label}
-            </span>
+          <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => void handleDetectLocation()}
               disabled={detectingLocation}
-              className="inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold bg-white border border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-pastel-blue-50 hover:border-pastel-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-fit"
             >
-              {detectingLocation ? 'Detection...' : (isAtHome === null ? 'Detecter ma position' : 'Actualiser position')}
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              {detectingLocation ? 'Détection...' : (isAtHome === null ? 'Détecter ma position' : 'Actualiser position')}
             </button>
-            <button
-              type="button"
-              onClick={() => setManualLocationContext(true)}
-              className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
-                isAtHome === true
-                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                  : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-emerald-50 hover:border-emerald-300'
-              }`}
-            >
-              Je suis a la maison
-            </button>
-            <button
-              type="button"
-              onClick={() => setManualLocationContext(false)}
-              className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] md:text-xs font-semibold border transition-colors ${
-                isAtHome === false
-                  ? 'bg-blue-100 text-blue-800 border-blue-300'
-                  : 'bg-white border-pastel-neutral-300/70 text-pastel-neutral-700 hover:bg-blue-50 hover:border-blue-300'
-              }`}
-            >
-              Je suis a l'exterieur
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setManualLocationContext(true)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  isAtHome === true
+                    ? 'bg-sport-100 text-sport-800 border-sport-300'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-sport-50 hover:border-sport-300 hover:text-sport-700'
+                }`}
+              >
+                🏠 Maison
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualLocationContext(false)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  isAtHome === false
+                    ? 'bg-brand-100 text-brand-800 border-brand-300'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700'
+                }`}
+              >
+                🌳 Extérieur
+              </button>
+            </div>
           </div>
 
           {locationError && (
@@ -454,9 +454,6 @@ export function Dashboard() {
                 </span>
                 <span className="text-pastel-neutral-500 block text-[10px] md:text-xs mt-0.5 leading-snug break-words">
                   {currentProgram.name}
-                </span>
-                <span className={`mt-1 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-[11px] font-semibold ${locationContext.chipClass}`}>
-                  {isAtHome === true ? 'Maison' : isAtHome === false ? 'Exterieur' : 'Auto'}
                 </span>
               </div>
             </Link>

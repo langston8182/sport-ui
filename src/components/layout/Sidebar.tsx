@@ -16,7 +16,13 @@ const timerItems = [
   { to: '/timer/tabata', icon: Timer,  label: 'Tabata Timer',  iconCls: 'bg-red-100 text-red-600' },
 ];
 
-const mobileNavItems = [...navItems.filter(i => i.to !== '/progression'), ...timerItems];
+const mobileNavItems = [
+  { to: '/',             icon: LayoutDashboard, label: 'Tableau',    exact: true, iconCls: 'bg-brand-100 text-brand-600' },
+  { to: '/exercises',    icon: Dumbbell,        label: 'Exercices',               iconCls: 'bg-amber-100 text-amber-600' },
+  { to: '/sessions',     icon: ListChecks,      label: 'Sessions',                iconCls: 'bg-sport-100 text-sport-600' },
+  { to: '/programs',     icon: CalendarDays,    label: 'Programmes',              iconCls: 'bg-purple-100 text-purple-600' },
+  { to: '/running-plan', icon: Footprints,      label: 'Plan',                    iconCls: 'bg-sport-100 text-sport-600' },
+];
 
 export function BottomNav() {
   const allItems = mobileNavItems;
@@ -25,7 +31,7 @@ export function BottomNav() {
       className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100"
       style={{ boxShadow: '0 -1px 0 0 #f3f4f6' }}
     >
-      <div className="flex overflow-x-auto px-1" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex justify-around w-full px-1">
         {allItems.map(({ to, icon: Icon, label, iconCls, ...rest }) => (
           <NavLink
             key={to}
