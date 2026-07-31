@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Header } from './Header';
-import { Sidebar } from './Sidebar';
+import { Sidebar, BottomNav } from './Sidebar';
 import { useRestTimer } from '../../contexts/RestTimerContext';
 
 interface LayoutProps {
@@ -26,7 +26,7 @@ export function Layout({ children }: LayoutProps) {
       <Header />
       <div className="flex">
         <Sidebar />
-        <main className={`flex-1 p-5 md:p-8 w-full fade-in ${restTimer?.isMinimized ? 'pb-28 sm:pb-32' : ''}`}>
+        <main className={`flex-1 p-5 md:p-8 w-full fade-in ${restTimer?.isMinimized ? 'pb-40 md:pb-32' : 'pb-20 md:pb-0'}`}>
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
@@ -94,9 +94,11 @@ export function Layout({ children }: LayoutProps) {
         </div>
       )}
 
+      <BottomNav />
+
       {/* ── Rest timer minimized bar ── */}
       {restTimer && restTimer.isMinimized && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3">
+        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 px-4 py-3">
           <div className="mx-auto max-w-2xl bg-white border border-gray-200 rounded-2xl shadow-card-hover p-4 flex items-center gap-4">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
               isUrgent ? 'bg-rose-500' : 'bg-brand-600'

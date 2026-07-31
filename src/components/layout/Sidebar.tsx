@@ -16,6 +16,44 @@ const timerItems = [
   { to: '/timer/tabata', icon: Timer,  label: 'Tabata Timer',  iconCls: 'bg-red-100 text-red-600' },
 ];
 
+const mobileNavItems = [...navItems.filter(i => i.to !== '/progression'), ...timerItems];
+
+export function BottomNav() {
+  const allItems = mobileNavItems;
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100"
+      style={{ boxShadow: '0 -1px 0 0 #f3f4f6' }}
+    >
+      <div className="flex overflow-x-auto px-1" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        {allItems.map(({ to, icon: Icon, label, iconCls, ...rest }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={'exact' in rest ? (rest as { exact?: boolean }).exact : false}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-0.5 px-3 py-2 min-w-[60px] flex-shrink-0 text-center transition-colors ${
+                isActive ? 'text-brand-600' : 'text-gray-400'
+              }`
+            }
+          >
+            {({ isActive }: { isActive: boolean }) => (
+              <>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                  isActive ? iconCls : ''
+                }`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-[9px] font-medium leading-none">{label.split(' ')[0]}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 export function Sidebar() {
   return (
     <aside className="w-64 bg-white border-r border-gray-100 h-[calc(100vh-4rem)] sticky top-16 hidden md:flex flex-col">
