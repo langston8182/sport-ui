@@ -212,10 +212,6 @@ export function Dashboard() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const geolocationEnvDebug =
-    `Source env: ${HOME_ENV_SOURCE} | lat: ${Number.isFinite(HOME_LATITUDE) ? HOME_LATITUDE : 'missing'} | ` +
-    `lon: ${Number.isFinite(HOME_LONGITUDE) ? HOME_LONGITUDE : 'missing'} | radius: ${Number.isFinite(HOME_RADIUS_METERS) ? HOME_RADIUS_METERS : 'missing'}`;
-
   const locationContext = (() => {
     const geolocationAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation;
 
@@ -296,6 +292,10 @@ export function Dashboard() {
     setLocationError(result.error);
     setDetectingLocation(false);
   };
+
+  useEffect(() => {
+    void handleDetectLocation();
+  }, []);
 
   const setManualLocationContext = (value: boolean) => {
     setIsAtHome(value);
@@ -428,9 +428,6 @@ export function Dashboard() {
             </p>
           )}
 
-          <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 w-full break-words">
-            {geolocationEnvDebug}
-          </p>
         </div>
         
         <div className="grid grid-cols-1 gap-1.5 md:gap-4 lg:gap-6">
