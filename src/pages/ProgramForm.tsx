@@ -11,20 +11,27 @@ import { SessionPicker } from '../components/programs/SessionPicker';
 
 const env = import.meta.env as Record<string, string | undefined>;
 const HOME_PREFIX = (env.VITE_HOME_PROGRAM_PREFIX || 'Maison').trim().toLowerCase();
+const WORK_PREFIX = (env.VITE_WORK_PROGRAM_PREFIX || 'Travail').trim().toLowerCase();
 
 const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
 const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
 const CURRENT_AWAY_PROGRAM_ID_KEY = 'currentAwayProgramId';
+const CURRENT_WORK_PROGRAM_ID_KEY = 'currentWorkProgramId';
 const LOCATION_CONTEXT_KEY = 'dashboardLocationContext';
+
+type LocationContextValue = 'home' | 'work' | 'away' | null;
 
 function isHomeProgramName(name: string): boolean {
   return name.trim().toLowerCase().startsWith(HOME_PREFIX);
 }
 
-function readStoredLocationContext(): boolean | null {
+function isWorkProgramName(name: string): boolean {
+  return name.trim().toLowerCase().startsWith(WORK_PREFIX);
+}
+
+function readStoredLocationContext(): LocationContextValue {
   const raw = localStorage.getItem(LOCATION_CONTEXT_KEY);
-  if (raw === 'home') return true;
-  if (raw === 'away') return false;
+  if (raw === 'home' || raw === 'work' || raw === 'away') return raw;
   return null;
 }
 
@@ -84,16 +91,23 @@ export function ProgramForm() {
       const data = await programsService.getById(id);
       localStorage.setItem(CURRENT_PROGRAM_ID_KEY, data.id);
 
-      const atHome = readStoredLocationContext();
+      const locationContext = readStoredLocationContext();
       const isHomeProgram = isHomeProgramName(data.name);
+      const isWorkProgram = isWorkProgramName(data.name);
+      // Default to "salle de sport" (gym) when the location is unknown/undetected.
+      const effectiveContext: 'home' | 'work' | 'away' = locationContext ?? 'away';
 
       // Only update the context-specific key when the viewed program matches
       // the current location context.
-      if (atHome === true && isHomeProgram) {
+      if (effectiveContext === 'home' && isHomeProgram) {
         localStorage.setItem(CURRENT_HOME_PROGRAM_ID_KEY, data.id);
       }
 
-      if (atHome === false && !isHomeProgram) {
+      if (effectiveContext === 'work' && isWorkProgram) {
+        localStorage.setItem(CURRENT_WORK_PROGRAM_ID_KEY, data.id);
+      }
+
+      if (effectiveContext === 'away' && !isHomeProgram && !isWorkProgram) {
         localStorage.setItem(CURRENT_AWAY_PROGRAM_ID_KEY, data.id);
       }
 
