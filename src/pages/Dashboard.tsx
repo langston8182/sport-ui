@@ -12,6 +12,9 @@ const env = import.meta.env as Record<string, string | undefined>;
 const DEFAULT_HOME_LATITUDE = 45.102417;
 const DEFAULT_HOME_LONGITUDE = -0.385333;
 const DEFAULT_HOME_RADIUS_METERS = 120;
+const DEFAULT_WORK_LATITUDE = 48.88625068095606;
+const DEFAULT_WORK_LONGITUDE = 2.29822462644005;
+const DEFAULT_WORK_RADIUS_METERS = 120;
 
 function readEnv(...keys: string[]): string | undefined {
   for (const key of keys) {
@@ -52,31 +55,41 @@ const HOME_ENV_SOURCE =
       ? 'EXPO_PUBLIC_*'
       : 'fallback');
 
+const WORK_PREFIX = (readEnv('VITE_WORK_PROGRAM_PREFIX', 'EXPO_PUBLIC_WORK_PROGRAM_PREFIX') || 'Travail')
+  .trim()
+  .toLowerCase();
+const WORK_LATITUDE = parseEnvNumber(
+  readEnv('VITE_WORK_LATITUDE', 'EXPO_PUBLIC_WORK_LATITUDE') ?? String(DEFAULT_WORK_LATITUDE)
+);
+const WORK_LONGITUDE = parseEnvNumber(
+  readEnv('VITE_WORK_LONGITUDE', 'EXPO_PUBLIC_WORK_LONGITUDE') ?? String(DEFAULT_WORK_LONGITUDE)
+);
+const WORK_RADIUS_METERS = parseEnvNumber(
+  readEnv('VITE_WORK_RADIUS_METERS', 'EXPO_PUBLIC_WORK_RADIUS_METERS') ?? String(DEFAULT_WORK_RADIUS_METERS)
+);
+
 const CURRENT_PROGRAM_ID_KEY = 'currentProgramId';
 const CURRENT_HOME_PROGRAM_ID_KEY = 'currentHomeProgramId';
 const CURRENT_AWAY_PROGRAM_ID_KEY = 'currentAwayProgramId';
+const CURRENT_WORK_PROGRAM_ID_KEY = 'currentWorkProgramId';
 const LOCATION_CONTEXT_KEY = 'dashboardLocationContext';
 
+export type LocationContextValue = 'home' | 'work' | 'away' | null;
+
 type DetectResult = {
-  value: boolean | null;
+  value: LocationContextValue;
   error: string | null;
 };
 
-function readStoredLocationContext(): boolean | null {
+function readStoredLocationContext(): LocationContextValue {
   const raw = localStorage.getItem(LOCATION_CONTEXT_KEY);
-  if (raw === 'home') return true;
-  if (raw === 'away') return false;
+  if (raw === 'home' || raw === 'work' || raw === 'away') return raw;
   return null;
 }
 
-function storeLocationContext(value: boolean | null): void {
-  if (value === true) {
-    localStorage.setItem(LOCATION_CONTEXT_KEY, 'home');
-    return;
-  }
-
-  if (value === false) {
-    localStorage.setItem(LOCATION_CONTEXT_KEY, 'away');
+function storeLocationContext(value: LocationContextValue): void {
+  if (value === 'home' || value === 'work' || value === 'away') {
+    localStorage.setItem(LOCATION_CONTEXT_KEY, value);
     return;
   }
 
@@ -85,6 +98,10 @@ function storeLocationContext(value: boolean | null): void {
 
 function hasHomeCoordinates() {
   return Number.isFinite(HOME_LATITUDE) && Number.isFinite(HOME_LONGITUDE);
+}
+
+function hasWorkCoordinates() {
+  return Number.isFinite(WORK_LATITUDE) && Number.isFinite(WORK_LONGITUDE);
 }
 
 function haversineDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -106,28 +123,36 @@ function isHomeProgram(program: Program): boolean {
   return program.name.trim().toLowerCase().startsWith(HOME_PREFIX);
 }
 
-function resolveCurrentProgram(programs: Program[], isAtHome: boolean | null): Program | null {
+function isWorkProgram(program: Program): boolean {
+  return program.name.trim().toLowerCase().startsWith(WORK_PREFIX);
+}
+
+function resolveCurrentProgram(programs: Program[], locationContext: LocationContextValue): Program | null {
   if (programs.length === 0) return null;
 
   const storedProgramId = localStorage.getItem(CURRENT_PROGRAM_ID_KEY);
   const storedHomeProgramId = localStorage.getItem(CURRENT_HOME_PROGRAM_ID_KEY);
   const storedAwayProgramId = localStorage.getItem(CURRENT_AWAY_PROGRAM_ID_KEY);
+  const storedWorkProgramId = localStorage.getItem(CURRENT_WORK_PROGRAM_ID_KEY);
 
-  if (isAtHome === null) {
-    return (
-      programs.find((program) => program.id === storedProgramId) ||
-      programs[0] ||
-      null
-    );
-  }
+  // Default to "salle de sport" (gym) when the location is unknown/undetected.
+  const effectiveContext: 'home' | 'work' | 'away' = locationContext ?? 'away';
 
   const homePrograms = programs.filter((program) => isHomeProgram(program));
-  const awayPrograms = programs.filter((program) => !isHomeProgram(program));
-  const matchingPrograms = isAtHome
-    ? (homePrograms.length > 0 ? homePrograms : programs)
-    : (awayPrograms.length > 0 ? awayPrograms : programs);
+  const workPrograms = programs.filter((program) => isWorkProgram(program));
+  const awayPrograms = programs.filter((program) => !isHomeProgram(program) && !isWorkProgram(program));
 
-  const preferredId = isAtHome ? storedHomeProgramId : storedAwayProgramId;
+  const matchingPrograms = (() => {
+    if (effectiveContext === 'home') return homePrograms.length > 0 ? homePrograms : programs;
+    if (effectiveContext === 'work') return workPrograms.length > 0 ? workPrograms : programs;
+    return awayPrograms.length > 0 ? awayPrograms : programs;
+  })();
+
+  const preferredId = (() => {
+    if (effectiveContext === 'home') return storedHomeProgramId;
+    if (effectiveContext === 'work') return storedWorkProgramId;
+    return storedAwayProgramId;
+  })();
 
   return (
     matchingPrograms.find((program) => program.id === preferredId) ||
@@ -137,7 +162,7 @@ function resolveCurrentProgram(programs: Program[], isAtHome: boolean | null): P
   );
 }
 
-async function detectAtHome(): Promise<DetectResult> {
+async function detectLocationContext(): Promise<DetectResult> {
   if (!window.isSecureContext) {
     return {
       value: null,
@@ -145,10 +170,10 @@ async function detectAtHome(): Promise<DetectResult> {
     };
   }
 
-  if (!hasHomeCoordinates()) {
+  if (!hasHomeCoordinates() && !hasWorkCoordinates()) {
     return {
       value: null,
-      error: 'Coordonnees domicile manquantes (VITE_HOME_LATITUDE / VITE_HOME_LONGITUDE). Redemarre Expo avec cache vide apres modification des fichiers .env.',
+      error: 'Coordonnees domicile/travail manquantes (VITE_HOME_LATITUDE/LONGITUDE, VITE_WORK_LATITUDE/LONGITUDE). Redemarre apres modification des fichiers .env.',
     };
   }
 
@@ -169,17 +194,26 @@ async function detectAtHome(): Promise<DetectResult> {
     });
 
     const { latitude, longitude } = position.coords;
-    const distanceMeters = haversineDistanceMeters(
-      latitude,
-      longitude,
-      HOME_LATITUDE,
-      HOME_LONGITUDE
-    );
 
-    return {
-      value: distanceMeters <= HOME_RADIUS_METERS,
-      error: null,
-    };
+    const homeDistanceMeters = hasHomeCoordinates()
+      ? haversineDistanceMeters(latitude, longitude, HOME_LATITUDE, HOME_LONGITUDE)
+      : Number.POSITIVE_INFINITY;
+    const workDistanceMeters = hasWorkCoordinates()
+      ? haversineDistanceMeters(latitude, longitude, WORK_LATITUDE, WORK_LONGITUDE)
+      : Number.POSITIVE_INFINITY;
+
+    const isAtHome = homeDistanceMeters <= HOME_RADIUS_METERS;
+    const isAtWork = workDistanceMeters <= WORK_RADIUS_METERS;
+
+    if (isAtHome && isAtWork) {
+      // Both zones match (e.g. overlapping radii): pick the nearest one.
+      return { value: homeDistanceMeters <= workDistanceMeters ? 'home' : 'work', error: null };
+    }
+
+    if (isAtHome) return { value: 'home', error: null };
+    if (isAtWork) return { value: 'work', error: null };
+
+    return { value: 'away', error: null };
   } catch (error) {
     const geoError = error as GeolocationPositionError;
 
@@ -207,17 +241,17 @@ export function Dashboard() {
     weights: 0,
   });
   const [currentProgram, setCurrentProgram] = useState<Program | null>(null);
-  const [isAtHome, setIsAtHome] = useState<boolean | null>(() => readStoredLocationContext());
+  const [locationContext, setLocationContext] = useState<LocationContextValue>(() => readStoredLocationContext());
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const locationContext = (() => {
+  const locationChip = (() => {
     const geolocationAvailable = typeof navigator !== 'undefined' && !!navigator.geolocation;
 
-    if (!hasHomeCoordinates()) {
+    if (!hasHomeCoordinates() && !hasWorkCoordinates()) {
       return {
-        label: 'Position: domicile non configure',
+        label: 'Position: domicile/travail non configures',
         chipClass: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300/60',
       };
     }
@@ -229,22 +263,29 @@ export function Dashboard() {
       };
     }
 
-    if (isAtHome === true) {
+    if (locationContext === 'home') {
       return {
         label: 'Position: maison',
         chipClass: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border border-emerald-200/70',
       };
     }
 
-    if (isAtHome === false) {
+    if (locationContext === 'work') {
       return {
-        label: 'Position: exterieur',
+        label: 'Position: travail',
+        chipClass: 'bg-gradient-to-r from-purple-100 to-fuchsia-100 text-purple-800 border border-purple-200/70',
+      };
+    }
+
+    if (locationContext === 'away') {
+      return {
+        label: 'Position: salle de sport',
         chipClass: 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 border border-blue-200/70',
       };
     }
 
     return {
-      label: 'Position: inconnue',
+      label: 'Position: inconnue (salle de sport par défaut)',
       chipClass: 'bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-200/70',
     };
   })();
@@ -267,7 +308,7 @@ export function Dashboard() {
         });
 
         const programList = Array.isArray(programs) ? programs : [];
-        const resolvedCurrentProgram = resolveCurrentProgram(programList, isAtHome);
+        const resolvedCurrentProgram = resolveCurrentProgram(programList, locationContext);
 
         setCurrentProgram(resolvedCurrentProgram);
       } catch (error) {
@@ -280,14 +321,14 @@ export function Dashboard() {
     };
 
     fetchCounts();
-  }, [isAtHome]);
+  }, [locationContext]);
 
   const handleDetectLocation = async () => {
     setDetectingLocation(true);
     setLocationError(null);
 
-    const result = await detectAtHome();
-    setIsAtHome(result.value);
+    const result = await detectLocationContext();
+    setLocationContext(result.value);
     storeLocationContext(result.value);
     setLocationError(result.error);
     setDetectingLocation(false);
@@ -297,8 +338,8 @@ export function Dashboard() {
     void handleDetectLocation();
   }, []);
 
-  const setManualLocationContext = (value: boolean) => {
-    setIsAtHome(value);
+  const setManualLocationContext = (value: LocationContextValue) => {
+    setLocationContext(value);
     storeLocationContext(value);
   };
 
@@ -394,14 +435,14 @@ export function Dashboard() {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-fit"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-              {detectingLocation ? 'Détection...' : (isAtHome === null ? 'Détecter ma position' : 'Actualiser position')}
+              {detectingLocation ? 'Détection...' : (locationContext === null ? 'Détecter ma position' : 'Actualiser position')}
             </button>
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setManualLocationContext(true)}
+                onClick={() => setManualLocationContext('home')}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  isAtHome === true
+                  locationContext === 'home'
                     ? 'bg-sport-100 text-sport-800 border-sport-300'
                     : 'bg-white border-gray-200 text-gray-700 hover:bg-sport-50 hover:border-sport-300 hover:text-sport-700'
                 }`}
@@ -410,14 +451,25 @@ export function Dashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => setManualLocationContext(false)}
+                onClick={() => setManualLocationContext('work')}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-                  isAtHome === false
+                  locationContext === 'work'
+                    ? 'bg-purple-100 text-purple-800 border-purple-300'
+                    : 'bg-white border-gray-200 text-gray-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700'
+                }`}
+              >
+                🏢 Travail
+              </button>
+              <button
+                type="button"
+                onClick={() => setManualLocationContext('away')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                  locationContext === 'away'
                     ? 'bg-brand-100 text-brand-800 border-brand-300'
                     : 'bg-white border-gray-200 text-gray-700 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700'
                 }`}
               >
-                🌳 Extérieur
+                🏋️ Salle de sport
               </button>
             </div>
           </div>
@@ -436,10 +488,13 @@ export function Dashboard() {
               to={`/programs/${currentProgram.id}?mode=view`}
               onClick={() => {
                 localStorage.setItem(CURRENT_PROGRAM_ID_KEY, currentProgram.id);
-                if (isAtHome === true) {
+                if (locationContext === 'home') {
                   localStorage.setItem(CURRENT_HOME_PROGRAM_ID_KEY, currentProgram.id);
                 }
-                if (isAtHome === false) {
+                if (locationContext === 'work') {
+                  localStorage.setItem(CURRENT_WORK_PROGRAM_ID_KEY, currentProgram.id);
+                }
+                if (locationContext === 'away') {
                   localStorage.setItem(CURRENT_AWAY_PROGRAM_ID_KEY, currentProgram.id);
                 }
               }}
