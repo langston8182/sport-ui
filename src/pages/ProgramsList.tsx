@@ -13,6 +13,47 @@ import { useToast } from '../components/ui/Toast';
 type ExportFormat = 'txt' | 'csv' | 'md';
 type SessionMap = Record<string, Session>;
 type ExerciseMap = Record<string, Exercise>;
+type LocationCategory = 'all' | 'home' | 'work' | 'gym';
+
+const env = import.meta.env as Record<string, string | undefined>;
+
+function readEnv(...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = env[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') {
+      return String(value).trim();
+    }
+  }
+  return undefined;
+}
+
+const HOME_PREFIX = (readEnv('VITE_HOME_PROGRAM_PREFIX', 'EXPO_PUBLIC_HOME_PROGRAM_PREFIX') || 'Maison')
+    .trim()
+    .toLowerCase();
+const WORK_PREFIX = (readEnv('VITE_WORK_PROGRAM_PREFIX', 'EXPO_PUBLIC_WORK_PROGRAM_PREFIX') || 'Travail')
+    .trim()
+    .toLowerCase();
+
+function isHomeProgram(program: Program): boolean {
+  return program.name.trim().toLowerCase().startsWith(HOME_PREFIX);
+}
+
+function isWorkProgram(program: Program): boolean {
+  return program.name.trim().toLowerCase().startsWith(WORK_PREFIX);
+}
+
+function getProgramCategory(program: Program): Exclude<LocationCategory, 'all'> {
+  if (isHomeProgram(program)) return 'home';
+  if (isWorkProgram(program)) return 'work';
+  return 'gym';
+}
+
+const categoryFilterOptions: Array<{ value: LocationCategory; label: string; icon: string }> = [
+  { value: 'all', label: 'Tous', icon: '📋' },
+  { value: 'home', label: 'Maison', icon: '🏠' },
+  { value: 'work', label: 'Travail', icon: '🏢' },
+  { value: 'gym', label: 'Salle de sport', icon: '🏋️' },
+];
 
 const exportFormatOptions: Array<{ value: ExportFormat; label: string }> = [
   { value: 'txt', label: 'Texte' },
@@ -185,6 +226,7 @@ export function ProgramsList() {
   const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<LocationCategory>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>([]);
   const [exportFormat, setExportFormat] = useState<ExportFormat>('txt');
@@ -209,16 +251,20 @@ export function ProgramsList() {
   }, [fetchPrograms]);
 
   useEffect(() => {
-    if (searchTerm) {
-      setFilteredPrograms(
-          programs.filter((program) =>
-              program.name.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-      );
-    } else {
-      setFilteredPrograms(programs);
+    let next = programs;
+
+    if (categoryFilter !== 'all') {
+      next = next.filter((program) => getProgramCategory(program) === categoryFilter);
     }
-  }, [programs, searchTerm]);
+
+    if (searchTerm) {
+      next = next.filter((program) =>
+          program.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredPrograms(next);
+  }, [programs, searchTerm, categoryFilter]);
 
   useEffect(() => {
     setSelectedProgramIds((prev) => prev.filter((id) => programs.some((program) => program.id === id)));
@@ -324,6 +370,36 @@ export function ProgramsList() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-4">
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 sm:flex-wrap sm:overflow-visible mb-3" role="group" aria-label="Filtrer par lieu">
+            {categoryFilterOptions.map((option) => {
+              const count = option.value === 'all'
+                  ? programs.length
+                  : programs.filter((program) => getProgramCategory(program) === option.value).length;
+              const isActive = categoryFilter === option.value;
+
+              return (
+                  <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setCategoryFilter(option.value)}
+                      aria-pressed={isActive}
+                      className={`flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
+                          isActive
+                              ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
+                              : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                      }`}
+                  >
+                    <span aria-hidden="true">{option.icon}</span>
+                    <span>{option.label}</span>
+                    <span className={`text-xs rounded-full px-1.5 py-0.5 ${
+                        isActive ? 'bg-white/20' : 'bg-gray-200 text-gray-600'
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+              );
+            })}
+          </div>
           <div className="flex flex-col lg:flex-row gap-3">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -382,12 +458,12 @@ export function ProgramsList() {
                   icon={CalendarDays}
                   title="No programs found"
                   description={
-                    searchTerm
-                        ? 'Try adjusting your search'
+                    searchTerm || categoryFilter !== 'all'
+                        ? 'Try adjusting your search or filter'
                         : 'Get started by creating your first program'
                   }
                   action={
-                    !searchTerm
+                    !searchTerm && categoryFilter === 'all'
                         ? {
                           label: 'Create Program',
                           onClick: () => navigate('/programs/new'),
