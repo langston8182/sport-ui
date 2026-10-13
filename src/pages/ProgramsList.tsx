@@ -417,9 +417,9 @@ export function ProgramsList() {
                             className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                             aria-label={`Select ${program.name}`}
                         />
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 truncate">{program.name}</p>
-                          <p className="text-sm text-gray-600 mt-1 truncate">{program.goal || '-'}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-gray-900 break-words">{program.name}</p>
+                          <p className="text-sm text-gray-600 mt-1 break-words">{program.goal || '-'}</p>
                         </div>
                         <div className="flex justify-end gap-1 shrink-0">
                           <button
