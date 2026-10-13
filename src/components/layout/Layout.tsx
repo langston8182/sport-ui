@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Sidebar, BottomNav } from './Sidebar';
 import { useRestTimer } from '../../contexts/RestTimerContext';
@@ -9,6 +10,8 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { restTimer, stopRestTimer, expandRestTimer, minimizeRestTimer } = useRestTimer();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -20,6 +23,13 @@ export function Layout({ children }: LayoutProps) {
   const isDone = restTimer?.timeLeft === 0;
   const progress = restTimer ? restTimer.timeLeft / restTimer.totalTime : 0;
   const circumference = 2 * Math.PI * 52;
+
+  const handleOpenMinimizedTimer = () => {
+    if (restTimer?.returnPath && location.pathname !== restTimer.returnPath) {
+      navigate(restTimer.returnPath, { state: restTimer.returnState });
+    }
+    expandRestTimer();
+  };
 
   return (
     <div className="min-h-screen bg-[#f4f5fb]">
@@ -114,7 +124,7 @@ export function Layout({ children }: LayoutProps) {
               </p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
-              <button onClick={expandRestTimer} className="btn-primary py-2 px-4 text-xs">Ouvrir</button>
+              <button onClick={handleOpenMinimizedTimer} className="btn-primary py-2 px-4 text-xs">Ouvrir</button>
               <button onClick={stopRestTimer} className="btn-ghost py-2 px-3 text-xs">Ignorer</button>
             </div>
           </div>

@@ -7,12 +7,16 @@ interface RestTimerState {
   totalTime: number;
   isActive: boolean;
   isMinimized: boolean;
+  returnPath?: string;
+  returnState?: unknown;
 }
 
 interface StartRestTimerPayload {
   exerciseName: string;
   setNumber: number;
   restTime: number;
+  returnPath?: string;
+  returnState?: unknown;
 }
 
 interface RestTimerContextType {
@@ -141,7 +145,7 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const startRestTimer = ({ exerciseName, setNumber, restTime }: StartRestTimerPayload) => {
+  const startRestTimer = ({ exerciseName, setNumber, restTime, returnPath, returnState }: StartRestTimerPayload) => {
     if (restTime <= 0) return;
 
     setRestTimer({
@@ -151,6 +155,8 @@ export function RestTimerProvider({ children }: { children: ReactNode }) {
       totalTime: restTime,
       isActive: true,
       isMinimized: false,
+      returnPath,
+      returnState,
     });
   };
 

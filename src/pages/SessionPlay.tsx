@@ -118,6 +118,8 @@ export default function SessionPlay() {
                             exerciseName,
                             setNumber: setIndex + 1,
                             restTime,
+                            returnPath: `/sessions/${session.id}/play`,
+                            returnState: { session, exercises },
                         });
                     }
                 }
