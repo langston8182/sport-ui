@@ -455,11 +455,14 @@ export function SessionForm() {
                                             <input
                                                 type="number"
                                                 min="0"
-                                                value={item.restSec}
+                                                value={item.restSec === 0 ? '' : item.restSec}
                                                 onChange={(e) =>
-                                                    handleUpdateItem(index, { restSec: Number(e.target.value) })
+                                                    handleUpdateItem(index, {
+                                                      restSec: e.target.value === '' ? 0 : Number(e.target.value),
+                                                    })
                                                 }
                                                 className="input-pastel w-full text-sm"
+                                                placeholder="0"
                                             />
                                           </div>
                                         </div>
@@ -487,11 +490,14 @@ export function SessionForm() {
                                             <input
                                                 type="number"
                                                 min="0"
-                                                value={item.restSec}
+                                                value={item.restSec === 0 ? '' : item.restSec}
                                                 onChange={(e) =>
-                                                    handleUpdateItem(index, { restSec: Number(e.target.value) })
+                                                    handleUpdateItem(index, {
+                                                      restSec: e.target.value === '' ? 0 : Number(e.target.value),
+                                                    })
                                                 }
                                                 className="input-pastel w-full text-sm"
+                                                placeholder="0"
                                             />
                                           </div>
                                         </div>
