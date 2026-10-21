@@ -12,8 +12,8 @@ const env = import.meta.env as Record<string, string | undefined>;
 const DEFAULT_HOME_LATITUDE = 45.102417;
 const DEFAULT_HOME_LONGITUDE = -0.385333;
 const DEFAULT_HOME_RADIUS_METERS = 120;
-const DEFAULT_WORK_LATITUDE = 48.88625068095606;
-const DEFAULT_WORK_LONGITUDE = 2.29822462644005;
+const DEFAULT_WORK_LATITUDE = 48.883177265738325;
+const DEFAULT_WORK_LONGITUDE = 2.297628584660785;
 const DEFAULT_WORK_RADIUS_METERS = 120;
 
 function readEnv(...keys: string[]): string | undefined {
