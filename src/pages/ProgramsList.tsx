@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, CreditCard as Edit, Trash2, Search, CalendarDays, Download } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Search, CalendarDays, Download, Copy } from 'lucide-react';
 import { programsService } from '../services/programs';
 import { sessionsService } from '../services/sessions';
 import { exercisesService } from '../services/exercises';
@@ -228,6 +228,7 @@ export function ProgramsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<LocationCategory>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [selectedProgramIds, setSelectedProgramIds] = useState<string[]>([]);
   const [exportFormat, setExportFormat] = useState<ExportFormat>('txt');
   const [exporting, setExporting] = useState(false);
@@ -281,6 +282,35 @@ export function ProgramsList() {
       showToast('Failed to delete program', 'error');
     } finally {
       setDeleteId(null);
+    }
+  };
+
+  const handleDuplicate = async (program: Program) => {
+    setDuplicatingId(program.id);
+    try {
+      const duplicatedProgram = await programsService.create({
+        name: `${program.name} (copy)`,
+        goal: program.goal,
+        weeks: program.weeks,
+        sessionsPerWeek: program.sessionsPerWeek,
+      });
+
+      for (const entry of [...program.schedule].sort((a, b) => a.week - b.week || a.slot - b.slot)) {
+        await programsService.addScheduleEntry(duplicatedProgram.id, {
+          week: entry.week,
+          slot: entry.slot,
+          sessionId: entry.sessionId,
+        });
+      }
+
+      const fullDuplicatedProgram = await programsService.getById(duplicatedProgram.id);
+
+      setPrograms((prev) => [fullDuplicatedProgram, ...prev]);
+      showToast('Program duplicated successfully', 'success');
+    } catch {
+      showToast('Failed to duplicate program', 'error');
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -512,6 +542,17 @@ export function ProgramsList() {
                           <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                void handleDuplicate(program);
+                              }}
+                              disabled={duplicatingId === program.id}
+                              className="p-2 text-gray-600 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label="Duplicate program"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+                          <button
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setDeleteId(program.id);
                               }}
                               className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -604,6 +645,17 @@ export function ProgramsList() {
                                 aria-label="Edit program"
                             >
                               <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void handleDuplicate(program);
+                                }}
+                                disabled={duplicatingId === program.id}
+                                className="p-2 text-gray-600 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Duplicate program"
+                            >
+                              <Copy className="w-4 h-4" />
                             </button>
                             <button
                                 onClick={(e) => {
