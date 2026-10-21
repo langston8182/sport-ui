@@ -488,8 +488,9 @@ export function ProgramForm() {
                         id="weeks"
                         type="number"
                         min="1"
-                        value={weeks}
-                        onChange={(e) => setWeeks(Number(e.target.value))}
+                        value={weeks === 0 ? '' : weeks}
+                        onChange={(e) => setWeeks(e.target.value === '' ? 0 : Number(e.target.value))}
+                        placeholder="4"
                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
                             errors.weeks ? 'border-red-500' : 'border-gray-300'
                         }`}
@@ -505,8 +506,9 @@ export function ProgramForm() {
                         id="sessionsPerWeek"
                         type="number"
                         min="1"
-                        value={sessionsPerWeek}
-                        onChange={(e) => setSessionsPerWeek(Number(e.target.value))}
+                        value={sessionsPerWeek === 0 ? '' : sessionsPerWeek}
+                        onChange={(e) => setSessionsPerWeek(e.target.value === '' ? 0 : Number(e.target.value))}
+                        placeholder="3"
                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent ${
                             errors.sessionsPerWeek ? 'border-red-500' : 'border-gray-300'
                         }`}
