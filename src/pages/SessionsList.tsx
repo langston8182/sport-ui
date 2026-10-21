@@ -183,8 +183,8 @@ export function SessionsList() {
                         onClick={() => navigate(`/sessions/${session.id}?mode=view`)}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="font-semibold text-gray-900 truncate">{session.name}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 break-words">{session.name}</p>
                           <div className="mt-2 flex flex-wrap gap-3 text-sm text-gray-600">
                             <span>{session.items.length} exercices</span>
                             <span>{Math.round(calculateDuration(session) / 60)} min</span>
